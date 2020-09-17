@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rohenaz/go-bitcoin"
 	"github.com/rohenaz/go-bob"
 )
 
@@ -56,30 +57,21 @@ func (a *Aip) FromTape(tape bob.Tape) {
 }
 
 // Sign will provide an AIP signature for a given private key and data
-// func Sign(xpriv string, data []byte) string {
-// 	// pk = bsvec.PrivateKey
-// 	// pk.Sign(data)
-// 	return ""
-// }
+func (a *Aip) Sign(privKey string, message string) (ok bool) {
+	// pk = bsvec.PrivateKey
+	// pk.Sign(data)
+	a.Signature = bitcoin.SignMessage(privKey, message)
+	a.Address = bitcoin.AddressFromPrivKey(privKey)
+	a.Algorithm = "BITCOIN_ECDSA"
+	return true
+}
 
 // Validate returns true if the given AIP signature is valid for given data
 func (a *Aip) Validate(data string) (ok bool) {
 	switch a.Algorithm {
 	case BITCOIN_ECDSA:
 		// Validate verifies a Bitcoin signed message signature
-		addrs, err := sigmestoaddr(a.Signature, data, CoinParams{
-			Header: H_BSV,
-			Magic:  []byte{byte(0)}})
-		if err != nil {
-			return
-		}
-		for _, addr2 := range addrs {
-			if a.Address == addr2 {
-				ok = true
-				return
-			}
-		}
-		return
+		return bitcoin.VerifyMessage(a.Address, a.Signature, data)
 	}
 	return
 }
