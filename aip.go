@@ -1,18 +1,9 @@
 package aip
 
 import (
-	"bytes"
-	"log"
 	"strconv"
+	"strings"
 
-	"encoding/base64"
-
-	"github.com/bitcoinsv/bsvd/bsvec"
-	"github.com/bitcoinsv/bsvd/chaincfg"
-	"github.com/bitcoinsv/bsvd/chaincfg/chainhash"
-	"github.com/bitcoinsv/bsvd/wire"
-	"github.com/bitcoinsv/bsvutil"
-	"github.com/libsv/libsv/script/address"
 	"github.com/rohenaz/go-bob"
 )
 
@@ -40,6 +31,7 @@ func New() *Aip {
 // FromTape takes a BOB Tape and returns a Aip data structure
 func (a *Aip) FromTape(tape bob.Tape) {
 
+	// log.Println("Cell len is", len(tape.Cell))
 	if len(tape.Cell) < 4 || tape.Cell[0].S != Prefix {
 		return
 	}
@@ -49,13 +41,17 @@ func (a *Aip) FromTape(tape bob.Tape) {
 	a.Signature = tape.Cell[3].B // Is this B or S????
 
 	if len(tape.Cell) > 4 {
+
 		a.Indicies = make([]int, len(tape.Cell)-4)
 
 		// Loop over remaining indicies if they exist and append to indicies slice
 		for x := 4; x < len(tape.Cell); x++ {
+			// log.Println("X IS", x)
+			// log.Printf("Cell Data %+v", tape.Cell[x])
 			index, _ := strconv.ParseUint(tape.Cell[x].S, 10, 64)
 			a.Indicies = append(a.Indicies, int(index))
 		}
+		// log.Printf("THE IDXS %+v", a.Indicies)
 	}
 }
 
@@ -67,55 +63,25 @@ func (a *Aip) FromTape(tape bob.Tape) {
 // }
 
 // Validate returns true if the given AIP signature is valid for given data
-func (a *Aip) Validate(buf bytes.Buffer) bool {
-
+func (a *Aip) Validate(data string) (ok bool) {
 	switch a.Algorithm {
 	case BITCOIN_ECDSA:
-
-		// verify signature against data
-		addy, err := address.NewFromString(a.Address)
+		// Validate verifies a Bitcoin signed message signature
+		addrs, err := sigmestoaddr(a.Signature, data, CoinParams{
+			Header: H_BSV,
+			Magic:  []byte{byte(0)}})
 		if err != nil {
-			return false
+			return
 		}
-
-		// Decode base64 signature.
-		sig, err := base64.StdEncoding.DecodeString(a.Signature)
-		if err != nil {
-			log.Println("Failed to decode b64 signature", err)
-			return false
+		for _, addr2 := range addrs {
+			if a.Address == addr2 {
+				ok = true
+				return
+			}
 		}
-
-		expectedMessageHash := chainhash.DoubleHashB(buf.Bytes())
-		pk, wasCompressed, err := bsvec.RecoverCompact(bsvec.S256(), sig, expectedMessageHash)
-		if err != nil {
-			// Mirror Bitcoin Core behavior, which treats error in
-			// RecoverCompact as invalid signature.
-			log.Printf("Signature validation failed %s Compressed?: %t\n", err, wasCompressed)
-			return false
-		}
-
-		// Reconstruct the pubkey hash.
-		var serializedPK []byte
-		if wasCompressed {
-			serializedPK = pk.SerializeCompressed()
-		} else {
-			serializedPK = pk.SerializeUncompressed()
-		}
-
-		address, err := bsvutil.NewAddressPubKey(serializedPK, &chaincfg.MainNetParams)
-		if err != nil {
-			// Again mirror Bitcoin Core behavior, which treats error in public key
-			// reconstruction as invalid signature.
-			log.Panicln("Failed to do the thing 2", err)
-			return false
-		}
-
-		if address.EncodeAddress() == addy.AddressString {
-			return true
-		}
-
+		return
 	}
-	return false
+	return
 }
 
 // ValidateTapes validates the AIP signature for a given []bob.Tape
@@ -125,12 +91,18 @@ func ValidateTapes(tapes []bob.Tape) bool {
 	var aipTape bob.Tape
 	for tapeIdx, tape := range tapes {
 
+		// Once we hit AIP Prefix, stop
 		if tape.Cell[0].S == Prefix {
 			aipTape = tape
 			break
 		}
 
 		for _, cell := range tape.Cell {
+			if cell.Op > 0 {
+				data = append(data, string(cell.Op))
+				continue
+			}
+
 			data = append(data, cell.S)
 		}
 
@@ -140,39 +112,7 @@ func ValidateTapes(tapes []bob.Tape) bool {
 
 	}
 
-	log.Printf("Validating %s", data)
-
 	a := New()
 	a.FromTape(aipTape)
-
-	var idxs []int
-	// if there are no indicies, everything is signed
-	if len(a.Indicies) == 0 {
-		idxs = make([]int, len(data))
-		for i := range idxs {
-			idxs[i] = i
-		}
-	}
-	// Validate the signature - this just shows that it was valid at all.
-	// we will compare it with the key next.
-	var buf bytes.Buffer
-
-	wire.WriteVarInt(&buf, 0, 0)
-	wire.WriteVarInt(&buf, 0, 106)
-
-	for idx := 0; idx < len(a.Indicies); idx++ {
-		arg := data[idxs[idx]]
-
-		if len(arg) == 0 {
-			wire.WriteVarInt(&buf, 0, 0)
-			continue
-		}
-		log.Println("Writing", arg)
-		wire.WriteVarString(&buf, 0, arg)
-	}
-
-	// Write the pipe
-	wire.WriteVarString(&buf, 0, "|")
-
-	return a.Validate(buf)
+	return a.Validate(strings.Join(data, ""))
 }
