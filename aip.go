@@ -1,6 +1,8 @@
 package aip
 
 import (
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -30,7 +32,7 @@ func New() *Aip {
 	return &Aip{}
 }
 
-func (a *Aip) SetData(bobTx bob.Tx) {
+func (a *Aip) SetData(bobTx *bob.Tx) {
 	var data []string
 
 	if len(a.Indicies) == 0 {
@@ -40,14 +42,22 @@ func (a *Aip) SetData(bobTx bob.Tx) {
 			for _, tape := range output.Tape {
 				for _, cell := range tape.Cell {
 					if cell.S != Prefix {
+						// Skip the OPS
+						if cell.Ops != "" {
+							log.Println("Skip ops")
+							continue
+						}
+						log.Println("Not the end", cell.S)
 						data = append(data, cell.S)
 					} else {
+						log.Println("We've hit the end", cell.S)
 						data = append(data, "|")
+						a.Data = data
+						return
 					}
 				}
 			}
 		}
-		a.Data = data
 	} else {
 		var indexCt = 0
 		for _, output := range bobTx.Out {
@@ -139,7 +149,7 @@ func ValidateTapes(tapes []bob.Tape) bool {
 
 		for _, cell := range tape.Cell {
 			if cell.Op > 0 {
-				data = append(data, string(cell.Op))
+				data = append(data, fmt.Sprintf("%d", cell.Op))
 				continue
 			}
 
