@@ -20,6 +20,7 @@ const (
 type Aip struct {
 	Algorithm string
 	Address   string
+	Data      []string
 	Signature string
 	Indicies  []int `json:"indicies,omitempty" bson:"indicies,omitempty"`
 }
@@ -27,6 +28,53 @@ type Aip struct {
 // New creates a new Aip struct
 func New() *Aip {
 	return &Aip{}
+}
+
+func (a *Aip) SetData(bobTx bob.Tx) {
+	var data []string
+
+	if len(a.Indicies) == 0 {
+		// walk over all output values and concatenate them until we hit the aip prefix, then add in the seperator
+		for _, output := range bobTx.Out {
+
+			for _, tape := range output.Tape {
+				for _, cell := range tape.Cell {
+					if cell.S != Prefix {
+						data = append(data, cell.S)
+					} else {
+						data = append(data, "|")
+					}
+				}
+			}
+		}
+		a.Data = data
+	} else {
+		var indexCt = 0
+		for _, output := range bobTx.Out {
+			for _, tape := range output.Tape {
+				for _, cell := range tape.Cell {
+
+					// TODO: This doesnt work yet, needs the count to start on the AIP containing output
+					if cell.S != Prefix && contains(a.Indicies, indexCt) {
+						data = append(data, cell.S)
+					} else {
+						data = append(data, "|")
+					}
+					indexCt = indexCt + 1
+				}
+			}
+		}
+		a.Data = data
+	}
+}
+
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 // FromTape takes a BOB Tape and returns a Aip data structure
