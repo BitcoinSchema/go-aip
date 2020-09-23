@@ -1,7 +1,6 @@
 package aip
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -32,48 +31,44 @@ func New() *Aip {
 	return &Aip{}
 }
 
-func (a *Aip) SetData(bobTx *bob.Tx) {
-	var data []string
+// SetData sets the data the AIP signature is signing
+func (a *Aip) SetData(tapes []bob.Tape) {
+
+	var data = []string{"j"}
 
 	if len(a.Indicies) == 0 {
 		// walk over all output values and concatenate them until we hit the aip prefix, then add in the seperator
-		for _, output := range bobTx.Out {
 
-			for _, tape := range output.Tape {
-				for _, cell := range tape.Cell {
-					if cell.S != Prefix {
-						// Skip the OPS
-						if cell.Ops != "" {
-							log.Println("Skip ops")
-							continue
-						}
-						log.Println("Not the end", cell.S)
-						data = append(data, cell.S)
-					} else {
-						log.Println("We've hit the end", cell.S)
-						data = append(data, "|")
-						a.Data = data
-						return
+		for _, tape := range tapes {
+			for _, cell := range tape.Cell {
+				if cell.S != Prefix {
+					// Skip the OPS
+					if cell.Ops != "" {
+						continue
 					}
+					data = append(data, cell.S)
+				} else {
+					data = append(data, "|")
+					a.Data = data
+					return
 				}
 			}
 		}
+
 	} else {
 		var indexCt = 0
-		for _, output := range bobTx.Out {
-			for _, tape := range output.Tape {
-				for _, cell := range tape.Cell {
 
-					// TODO: This doesnt work yet, needs the count to start on the AIP containing output
-					if cell.S != Prefix && contains(a.Indicies, indexCt) {
-						data = append(data, cell.S)
-					} else {
-						data = append(data, "|")
-					}
-					indexCt = indexCt + 1
+		for _, tape := range tapes {
+			for _, cell := range tape.Cell {
+				if cell.S != Prefix && contains(a.Indicies, indexCt) {
+					data = append(data, cell.S)
+				} else {
+					data = append(data, "|")
 				}
+				indexCt = indexCt + 1
 			}
 		}
+
 		a.Data = data
 	}
 }
@@ -87,7 +82,7 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-// FromTape takes a BOB Tape and returns a Aip data structure
+// FromTape takes a BOB Tape and returns a Aip data structure. Using from tape alone will prevent validation (data is needed via SetData to enable)
 func (a *Aip) FromTape(tape bob.Tape) {
 
 	// log.Println("Cell len is", len(tape.Cell))
@@ -125,11 +120,15 @@ func (a *Aip) Sign(privKey string, message string) (ok bool) {
 }
 
 // Validate returns true if the given AIP signature is valid for given data
-func (a *Aip) Validate(data string) (ok bool) {
+func (a *Aip) Validate() (ok bool) {
+	if len(a.Data) == 0 {
+		return
+	}
 	switch a.Algorithm {
 	case BITCOIN_ECDSA:
+		log.Println("Validating", a.Signature, a.Address, a.Data)
 		// Validate verifies a Bitcoin signed message signature
-		return bitcoin.VerifyMessage(a.Address, a.Signature, data)
+		return bitcoin.VerifyMessage(a.Address, a.Signature, strings.Join(a.Data, ""))
 	}
 	return
 }
@@ -137,32 +136,19 @@ func (a *Aip) Validate(data string) (ok bool) {
 // ValidateTapes validates the AIP signature for a given []bob.Tape
 func ValidateTapes(tapes []bob.Tape) bool {
 
-	var data []string
 	var aipTape bob.Tape
-	for tapeIdx, tape := range tapes {
-
+	for _, tape := range tapes {
 		// Once we hit AIP Prefix, stop
 		if tape.Cell[0].S == Prefix {
 			aipTape = tape
 			break
 		}
-
-		for _, cell := range tape.Cell {
-			if cell.Op > 0 {
-				data = append(data, fmt.Sprintf("%d", cell.Op))
-				continue
-			}
-
-			data = append(data, cell.S)
-		}
-
-		if tapeIdx != 0 {
-			data = append(data, "|")
-		}
-
 	}
 
 	a := New()
 	a.FromTape(aipTape)
-	return a.Validate(strings.Join(data, ""))
+	a.SetData(tapes)
+
+	log.Println("Data was set", a.Data)
+	return a.Validate()
 }

@@ -10,11 +10,9 @@ github.com/itchyny/base58-go v0.1.0/go.mod h1:SrMWPE3DFuJJp1M/RUhu4fccp/y9AlB8AL
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/piotrnar/gocoin v0.0.0-20200912093848-56d57d5b6be5 h1:7qMjDCz7USXw18S5feMCKjFtXTsv5yeK62TwFiP4nQE=
 github.com/piotrnar/gocoin v0.0.0-20200912093848-56d57d5b6be5/go.mod h1:sW6i99ojgdRHcz53PCjyEeoTEDFh9dfP5iiEIiNfcaM=
+github.com/piotrnar/gocoin v0.0.0-20200919104149-df6fb8d2acba h1:k3aLovjPDFL5CIE+y+W/sIvmOSC1h9sAgeMz3+HgfEw=
+github.com/piotrnar/gocoin v0.0.0-20200919104149-df6fb8d2acba/go.mod h1:sW6i99ojgdRHcz53PCjyEeoTEDFh9dfP5iiEIiNfcaM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/rohenaz/go-bitcoin v0.0.0-20200917023932-a296762284ae h1:oHZYk1usmYg/X3+9hBf0ltLRWNHKTvis4kBevbUvkKs=
-github.com/rohenaz/go-bitcoin v0.0.0-20200917023932-a296762284ae/go.mod h1:oTZFogWZrkoE3hZZ6Cw637cW1iGlB+9w5bb8nNr+BIk=
-github.com/rohenaz/go-bitcoin v0.0.1 h1:oJlCEk2rRKOB7oozgGIMxqhD/+cKlB0rhbyHFA27aeA=
-github.com/rohenaz/go-bitcoin v0.0.1/go.mod h1:oTZFogWZrkoE3hZZ6Cw637cW1iGlB+9w5bb8nNr+BIk=
 github.com/rohenaz/go-bitcoin v0.0.2 h1:Qi/Sjtd2BkcjsFqLvGd9edZ9zmYrQRD2OAB2gpH5osw=
 github.com/rohenaz/go-bitcoin v0.0.2/go.mod h1:SeAs3+ATQZB0J6ysNWyspNAiZXPfistYrks7dGtPz5I=
 github.com/rohenaz/go-bob v0.0.0-20200711220921-847f9f004275 h1:Q0OlBg3YM9JhIgXY+r2LZY67r1Hr7gfwnU6dLvS4mIM=
