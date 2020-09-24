@@ -1,7 +1,6 @@
 package aip
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
@@ -98,6 +97,7 @@ func (a *Aip) FromTape(tape bob.Tape) {
 
 		a.Indicies = make([]int, len(tape.Cell)-4)
 
+		// TODO: Consider OP_RETURN is included in sig when processing a tx using indices
 		// Loop over remaining indicies if they exist and append to indicies slice
 		for x := 4; x < len(tape.Cell); x++ {
 			// log.Println("X IS", x)
@@ -126,7 +126,6 @@ func (a *Aip) Validate() (ok bool) {
 	}
 	switch a.Algorithm {
 	case BITCOIN_ECDSA:
-		log.Println("Validating", a.Signature, a.Address, a.Data)
 		// Validate verifies a Bitcoin signed message signature
 		return bitcoin.VerifyMessage(a.Address, a.Signature, strings.Join(a.Data, ""))
 	}
@@ -148,7 +147,5 @@ func ValidateTapes(tapes []bob.Tape) bool {
 	a := New()
 	a.FromTape(aipTape)
 	a.SetData(tapes)
-
-	log.Println("Data was set", a.Data)
 	return a.Validate()
 }
