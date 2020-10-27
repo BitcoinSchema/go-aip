@@ -3,8 +3,12 @@ module github.com/rohenaz/go-aip
 go 1.14
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/piotrnar/gocoin v0.0.0-20200919104149-df6fb8d2acba // indirect
-	github.com/rohenaz/go-bitcoin v0.0.2
-	github.com/rohenaz/go-bob v0.0.0-20200711220921-847f9f004275
+	github.com/bitcoinschema/go-bitcoin v0.2.5
+	github.com/miekg/dns v1.1.35 // indirect
+	github.com/piotrnar/gocoin v0.0.0-20201027184336-0c389d7eb2c0 // indirect
+	github.com/rohenaz/go-bob v0.0.1
+	github.com/tonicpow/go-paymail v0.0.12
+	golang.org/x/net v0.0.0-20201027133719-8eef5233e2a1 // indirect
+	golang.org/x/sys v0.0.0-20201027140754-0fcbb8f4928c // indirect
+	golang.org/x/text v0.3.4 // indirect
 )

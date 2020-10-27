@@ -3,6 +3,7 @@ package aip
 import (
 	"testing"
 
+	"github.com/bitcoinschema/go-bitcoin"
 	"github.com/rohenaz/go-bob"
 )
 
@@ -43,5 +44,53 @@ func TestSetData(t *testing.T) {
 	if aip.Data[0] != "j" || aip.Data[1] != "1BAPSuaPnfGnSBM3GLV9yhxUdYe4vGbdMT" || aip.Data[2] != "ATTEST" && aip.Data[3] != "cf39fc55da24dc23eff1809e6e6cf32a0fe6aecc81296543e9ac84b8c501bac5" || aip.Data[4] != "0" {
 		t.Errorf("Failed setting aip data %+v", aip.Data)
 	}
+}
 
+func TestSign(t *testing.T) {
+	pk := "80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01"
+
+	privateKey, err := bitcoin.PrivateKeyFromString(pk)
+	if err != nil {
+		t.Errorf("Failed to get private key")
+	}
+	opReturn1 := bitcoin.OpReturnData{[]byte("prefix1"), []byte("example data"), []byte{0x13, 0x37}}
+	tx, err := bitcoin.CreateTx(nil, nil, []bitcoin.OpReturnData{opReturn1}, privateKey)
+	if err != nil {
+		t.Errorf("Failed to create tx %s", err)
+	}
+
+	// TODO
+	// Get a bob
+	bobTx := bob.New()
+	bobTx.FromRawTxString(tx.ToString())
+
+	// if !aipTx.Validate() {
+	// 	t.Errorf("could not validate paymail signature")
+	// }
+}
+
+func TestSignOpReturnData(t *testing.T) {
+	pk := "80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01"
+
+	privateKey, err := bitcoin.PrivateKeyFromString(pk)
+	if err != nil {
+		t.Errorf("Failed to get private key")
+	}
+	opReturn1 := bitcoin.OpReturnData{[]byte("prefix1"), []byte("example data"), []byte{0x13, 0x37}}
+	tx, err := bitcoin.CreateTx(nil, nil, []bitcoin.OpReturnData{opReturn1}, privateKey)
+	if err != nil {
+		t.Errorf("Failed to create tx %s", err)
+	}
+
+	// Get a bob
+	bobTx := bob.New()
+	bobTx.FromRawTxString(tx.ToString())
+	aipTx := New()
+	signedOutput := aipTx.SignOpReturnData(bobTx.Out[0], PAYMAIL, "satchmo@moneybutton.com", pk)
+
+	bobTx.Out = append(bobTx.Out, signedOutput)
+
+	if !aipTx.Validate() {
+		t.Errorf("could not validate paymail signature %+v", bobTx.Out)
+	}
 }
