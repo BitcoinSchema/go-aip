@@ -119,24 +119,21 @@ func (a *Aip) FromTape(tape bob.Tape) {
 // SignOpReturnData appends a signature to a Bob Tx by adding a protocol separator pushdata followed by AIP information
 func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm, addressString string, privKey string) bob.Output {
 
-	var dataToSign = ""
+	var dataToSign []string
 	for _, tape := range output.Tape {
 		for _, cell := range tape.Cell {
 			if len(cell.S) > 0 {
-				dataToSign += cell.S
+				dataToSign = append(dataToSign, cell.S)
 			} else {
 				// TODO: Review this case. Should we assume the b64 is signed? Should protocol doc for AIP mention this?
-				// b64Cell, err := base64.RawStdEncoding.DecodeString(cell.B)
-				// if err != nil {
-				// 	return nil, err
-				// }
-				dataToSign += cell.B
+				dataToSign = append(dataToSign, cell.B)
 			}
 		}
 	}
 	// get data to sign from bob tx
 	// TODO: We need a live paymail set up with matching key in the test... somehow...
-	a.Sign(privKey, dataToSign, algorithm, addressString)
+	a.Sign(privKey, strings.Join(dataToSign, ""), algorithm, addressString)
+	a.Data = dataToSign
 
 	output.Tape = append(output.Tape, bob.Tape{
 		Cell: []bob.Cell{{
@@ -157,7 +154,7 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm, addressSt
 	return output
 }
 
-// Sign will provide an AIP signature for a given private key and data. Use paymail = nil for BITCOIN_ECDSA signature
+// Sign will provide an AIP signature for a given private key and data. Just set paymail = "" when using BITCOIN_ECDSA signature
 func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail string) (ok bool) {
 
 	// pk = bsvec.PrivateKey
