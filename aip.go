@@ -2,6 +2,7 @@ package aip
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -117,7 +118,7 @@ func (a *Aip) FromTape(tape bob.Tape) {
 }
 
 // SignOpReturnData appends a signature to a Bob Tx by adding a protocol separator pushdata followed by AIP information
-func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm, addressString string, privKey string) bob.Output {
+func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm, addressString string, privKey string) (*bob.Output, error) {
 
 	var dataToSign []string
 	for _, tape := range output.Tape {
@@ -132,6 +133,15 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm, addressSt
 	}
 	// get data to sign from bob tx
 	// TODO: We need a live paymail set up with matching key in the test... somehow...
+	if algorithm == PAYMAIL {
+		// pubkey is used, dervice address
+		addr, err := bitcoin.GetAddressFromPubKeyString(addressString)
+		if err != nil {
+			return nil, err
+		}
+		addressString = addr.String()
+	}
+
 	a.Sign(privKey, strings.Join(dataToSign, ""), algorithm, addressString)
 	a.Data = dataToSign
 
@@ -151,7 +161,7 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm, addressSt
 		}},
 	})
 
-	return output
+	return &output, nil
 }
 
 // Sign will provide an AIP signature for a given private key and data. Just set paymail = "" when using BITCOIN_ECDSA signature
@@ -217,7 +227,7 @@ func getPki(paymailString string) (*paymail.PKI, error) {
 }
 
 // Validate returns true if the given AIP signature is valid for given data
-func (a *Aip) Validate() (ok bool) {
+func (a *Aip) Validate(paymailAddress string) (ok bool) {
 	if len(a.Data) == 0 {
 		return
 	}
@@ -227,8 +237,10 @@ func (a *Aip) Validate() (ok bool) {
 		err := bitcoin.VerifyMessage(a.Address, a.Signature, strings.Join(a.Data, ""))
 		return err == nil
 	case PAYMAIL:
-		paymailAddress := a.Address
-
+		if len(paymailAddress) == 0 {
+			log.Println("npo paymail address but using paymail algorithm")
+			return false
+		}
 		pki, err := getPki(paymailAddress)
 		if err != nil {
 			return false
@@ -237,6 +249,11 @@ func (a *Aip) Validate() (ok bool) {
 
 		addr, err := bitcoin.GetAddressFromPubKeyString(pki.PubKey)
 		if err != nil {
+			return false
+		}
+
+		if paymailAddress != addr.String() {
+			fmt.Printf("Address mismatch %s", addr)
 			return false
 		}
 
@@ -262,5 +279,5 @@ func ValidateTapes(tapes []bob.Tape) bool {
 	a := New()
 	a.FromTape(aipTape)
 	a.SetData(tapes)
-	return a.Validate()
+	return a.Validate("")
 }

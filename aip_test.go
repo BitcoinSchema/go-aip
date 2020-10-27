@@ -1,6 +1,7 @@
 package aip
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/bitcoinschema/go-bitcoin"
@@ -69,10 +70,11 @@ func TestSign(t *testing.T) {
 	// }
 }
 
+//TODO: This test does not pass yet. Need to figure out how to validate paymail signatures
 func TestSignOpReturnData(t *testing.T) {
 	pk := "80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01"
 
-	privateKey, err := bitcoin.PrivateKeyFromString(pk)
+	privateKey, publicKey, err := bitcoin.PrivateAndPublicKeys(pk)
 	if err != nil {
 		t.Errorf("Failed to get private key")
 	}
@@ -86,11 +88,11 @@ func TestSignOpReturnData(t *testing.T) {
 	bobTx := bob.New()
 	bobTx.FromRawTxString(tx.ToString())
 	aipTx := New()
-	signedOutput := aipTx.SignOpReturnData(bobTx.Out[0], PAYMAIL, "satchmo@moneybutton.com", pk)
+	signedOutput, err := aipTx.SignOpReturnData(bobTx.Out[0], PAYMAIL, hex.EncodeToString(publicKey.SerializeCompressed()), pk)
 
-	bobTx.Out = append(bobTx.Out, signedOutput)
+	bobTx.Out = append(bobTx.Out, *signedOutput)
 
-	if !aipTx.Validate() {
+	if !aipTx.Validate("") {
 		t.Errorf("could not validate paymail signature %+v", bobTx.Out)
 	}
 }
