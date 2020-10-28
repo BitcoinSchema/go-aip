@@ -171,7 +171,7 @@ func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail 
 	// pk.Sign(data)
 	switch algorithm {
 	case BITCOIN_ECDSA:
-		if &paymail != nil {
+		if paymail != "" {
 			// Error if paymail is provided, but algorithm is BITCOIN_ECDSA
 			return
 		}
