@@ -2,7 +2,7 @@ package aip
 
 import (
 	"encoding/hex"
-	"log"
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -94,7 +94,6 @@ func contains(s []int, e int) bool {
 // Using from tape alone will prevent validation (data is needed via SetData to enable)
 func (a *Aip) FromTape(tape bob.Tape) {
 
-	// log.Println("Cell len is", len(tape.Cell))
 	if len(tape.Cell) < 4 || tape.Cell[0].S != Prefix {
 		return
 	}
@@ -110,8 +109,6 @@ func (a *Aip) FromTape(tape bob.Tape) {
 		// TODO: Consider OP_RETURN is included in sig when processing a tx using indices
 		// Loop over remaining indices if they exist and append to indices slice
 		for x := 4; x < len(tape.Cell); x++ {
-			// log.Println("X IS", x)
-			// log.Printf("Cell Data %+v", tape.Cell[x])
 			index, _ := strconv.ParseUint(tape.Cell[x].S, 10, 64)
 			a.Indices = append(a.Indices, int(index))
 		}
@@ -148,11 +145,10 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm,
 
 	err := a.Sign(privKey, strings.Join(dataToSign, ""), algorithm, addressString)
 	if err != nil {
-		log.Println("Failed to sign", err)
+		return nil, err
 	}
 	a.Data = dataToSign
 
-	log.Printf("Signed data: %s Signature %s", dataToSign, a.Signature)
 	output.Tape = append(output.Tape, bob.Tape{
 		Cell: []bob.Cell{{
 			H: hex.EncodeToString([]byte(Prefix)),
@@ -174,23 +170,20 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm,
 
 // Sign will provide an AIP signature for a given private key and data.
 // Just set paymail = "" when using BITCOIN_ECDSA signature
-func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail string) (err error) {
-
-	// pk = bsvec.PrivateKey
-	// pk.Sign(data)
+func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail string) error {
 	switch algorithm {
 	case BitcoinECDSA:
 		if paymail != "" {
 			// Error if paymail is provided, but algorithm is BITCOIN_ECDSA
-			return err
+			return fmt.Errorf("paymail is provided but algorithm is: %s", BitcoinECDSA)
 		}
 		sig, err := bitcoin.SignMessage(privKey, message)
 		if err != nil {
 			return err
 		}
 		a.Signature = sig
-		address, err := bitcoin.GetAddressFromPrivateKey(privKey)
-		if err != nil {
+		var address string
+		if address, err = bitcoin.GetAddressFromPrivateKey(privKey); err != nil {
 			return err
 		}
 		a.Address = address
@@ -249,7 +242,6 @@ func (a *Aip) Validate(paymailAddress string) bool {
 		return err == nil
 	case Paymail:
 		if len(paymailAddress) == 0 {
-			log.Println("no paymail address but using paymail algorithm")
 			return false
 		}
 		pki, err := getPki(paymailAddress)
