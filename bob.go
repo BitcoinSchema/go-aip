@@ -139,3 +139,13 @@ func (a *Aip) SetDataFromTape(tapes []bob.Tape) {
 		a.Data = data
 	}
 }
+
+// contains looks in a slice for a given value
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}

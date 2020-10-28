@@ -49,3 +49,43 @@ func TestSetData(t *testing.T) {
 		t.Fatalf("failed setting aip data %+v", aip.Data)
 	}
 }
+
+/*
+// TestSignOpReturnDataUsingBob tests for nil case in SignOpReturnData()
+func TestSignOpReturnDataUsingBob(t *testing.T) {
+
+	// Get the private key
+	privateKey, err := bitcoin.PrivateKeyFromString(examplePrivateKey)
+	if err != nil {
+		t.Fatalf("failed to get private key")
+	}
+
+	// Create op_return
+	opReturn := bitcoin.OpReturnData{[]byte("prefix1"), []byte("example data"), []byte{0x13, 0x37}}
+
+	// Create a transaction
+	var tx *transaction.Transaction
+	tx, err = bitcoin.CreateTx(nil, nil, []bitcoin.OpReturnData{opReturn}, privateKey)
+	if err != nil {
+		t.Fatalf("failed to create tx %s", err)
+	}
+
+	// Create the bob tx from hex
+	var bobTx *bob.Tx
+	if bobTx, err = bob.NewFromRawTxString(tx.ToString()); err != nil {
+		t.Fatalf("error occurred: %s", err.Error())
+	}
+
+	// Sign the output
+	var signedOutput *output.Output
+	var a *Aip
+	signedOutput, a, err = SignOpReturnData(examplePrivateKey, BitcoinECDSA, bobTx.Out[0])
+	if err != nil {
+		t.Errorf("Failed to sign %s", err)
+	}
+
+	if !ValidateTapes(signedOutput.Tape) {
+		t.Errorf("Failed to validate bob tapes %+v", signedOutput)
+	}
+}
+*/

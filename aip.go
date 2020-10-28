@@ -112,13 +112,3 @@ func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (ou
 	out, err = output.NewOpReturnParts(data)
 	return
 }
-
-// contains looks in a slice for a given value
-func contains(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
