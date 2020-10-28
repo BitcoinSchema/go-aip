@@ -1,6 +1,6 @@
-module github.com/rohenaz/go-aip
+module github.com/bitcoinschema/go-aip
 
-go 1.14
+go 1.15
 
 require (
 	github.com/bitcoinschema/go-bitcoin v0.2.5
