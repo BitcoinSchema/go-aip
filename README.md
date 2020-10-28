@@ -39,8 +39,11 @@ View the generated [documentation](https://pkg.go.dev/github.com/bitcoinschema/g
 [![GoDoc](https://godoc.org/github.com/bitcoinschema/go-aip?status.svg&style=flat)](https://pkg.go.dev/github.com/bitcoinschema/go-aip)
 
 ### Features
-- Sign OpReturn
-- Validate Signatures (ECDSA & Paymail)
+- [Sign Message (using ECDSA, BitcoinSignedMessage)](aip.go)
+- [Sign OpReturn](aip.go)
+- [Validate Signatures (ECDSA & Paymail)](aip.go)
+- [Parse from BOB](bob.go)
+- [Validate BOB Tape](bob.go)
 
 <details>
 <summary><strong><code>Package Dependencies</code></strong></summary>
@@ -48,9 +51,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/bitcoinschema/g
 
 - [bitcoinschema/go-bitcoin](https://github.com/bitcoinschema/go-bitcoin)
 - [bitcoinschema/go-bob](https://github.com/bitcoinschema/go-bob)
-- [bitcoinsv/bsvutil](https://github.com/bitcoinsv/bsvutil)
 - [libsv/libsv](https://github.com/libsv/libsv)
-- [tonicpow/go-paymail](https://github.com/tonicpow/go-paymail)
 </details>
 
 <details>
