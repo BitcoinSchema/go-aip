@@ -1,7 +1,6 @@
 package aip
 
 import (
-	"encoding/hex"
 	"testing"
 
 	"github.com/bitcoinschema/go-bitcoin"
@@ -91,7 +90,7 @@ func TestSetData(t *testing.T) {
 func TestSignUsingPaymail(t *testing.T) {
 	pk := "80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01"
 
-	privateKey, publicKey, err := bitcoin.PrivateAndPublicKeys(pk)
+	privateKey, _, err := bitcoin.PrivateAndPublicKeys(pk)
 	if err != nil {
 		t.Fatalf("failed to get private key")
 	}
@@ -111,7 +110,7 @@ func TestSignUsingPaymail(t *testing.T) {
 	}
 
 	var signedOutput *bob.Output
-	signedOutput, _, err = SignBobOpReturnData(pk, Paymail, bobTx.Out[0], "some@domain.com", hex.EncodeToString(publicKey.SerializeCompressed()))
+	signedOutput, _, err = SignBobOpReturnData(pk, Paymail, bobTx.Out[0])
 	if err != nil {
 		t.Fatalf("error occurred: %s", err.Error())
 	}

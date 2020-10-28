@@ -7,16 +7,14 @@
 package aip
 
 import (
+	"bytes"
 	"encoding/hex"
-	"fmt"
-	"net"
 	"strconv"
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
 	"github.com/bitcoinschema/go-bob"
-	"github.com/bitcoinsv/bsvutil"
-	"github.com/tonicpow/go-paymail"
+	"github.com/libsv/libsv/transaction/output"
 )
 
 // Prefix is the Bitcom prefix used by AIP
@@ -34,12 +32,11 @@ const (
 
 // Aip is an Author Identity Protocol object
 type Aip struct {
-	Algorithm Algorithm // Different algorithms
-	Address   string    // Bitcoin address
-	Paymail   string    // handle@domain.com
-	Data      []string  // Data to sign
-	Signature string    // Signature of the given data
-	Indices   []int     `json:"indices,omitempty" bson:"indices,omitempty"` // Indices for BOB
+	Algorithm Algorithm
+	Address   string
+	Data      []string
+	Signature string
+	Indices   []int `json:"indices,omitempty" bson:"indices,omitempty"`
 }
 
 // FromTape takes a BOB Tape and returns a Aip data structure.
@@ -115,44 +112,26 @@ func (a *Aip) Validate() bool {
 	if len(a.Data) == 0 {
 		return false
 	}
-
-	// Different way to get the address from Paymail handle
-	if a.Algorithm == Paymail {
-		if len(a.Paymail) == 0 {
+	switch a.Algorithm {
+	case BitcoinECDSA:
+		// Validate verifies a Bitcoin signed message signature
+		return bitcoin.VerifyMessage(a.Address, a.Signature, strings.Join(a.Data, "")) == nil
+	case Paymail:
+		if len(a.Address) == 0 {
 			return false
 		}
 
-		// Get the PKI for the address (stores an address from a PubKey)
-		if len(a.Address) == 0 {
-			if err := a.GetAddressForPaymail(); err != nil {
-				return false
-			}
+		// Get the public address for this paymail from pki
+		addr, err := bitcoin.GetAddressFromPubKeyString(a.Address)
+		if err != nil {
+			return false
 		}
-	}
 
-	// Verify the address + signature + data
-	return bitcoin.VerifyMessage(a.Address, a.Signature, strings.Join(a.Data, "")) == nil
-}
-
-// GetAddressForPaymail will get the address of the PubKey associated with a Paymail address
-// This will do a remote lookup
-func (a *Aip) GetAddressForPaymail() error {
-	if len(a.Paymail) == 0 {
-		return fmt.Errorf("missing paymail address")
+		// You get the address associated with the pki instead of the current address
+		return bitcoin.VerifyMessage(addr.String(), a.Signature, strings.Join(a.Data, "")) == nil
+	default:
+		return false
 	}
-
-	pki, err := getPki(a.Paymail)
-	if err != nil {
-		return err
-	}
-
-	// Get the public address for this paymail from pki
-	var addr *bsvutil.LegacyAddressPubKeyHash
-	if addr, err = bitcoin.GetAddressFromPubKeyString(pki.PubKey); err != nil {
-		return err
-	}
-	a.Address = addr.String()
-	return nil
 }
 
 // NewFromTape will create a new AIP object from a bob.Tape
@@ -164,10 +143,8 @@ func NewFromTape(tape bob.Tape) (a *Aip) {
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
 // protocol separator push_data followed by AIP information
-func SignBobOpReturnData(privateKey string, algorithm Algorithm,
-	output bob.Output, paymailAddress, paymailPubKey string) (*bob.Output, *Aip, error) {
+func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Output) (*bob.Output, *Aip, error) {
 
-	// get data to sign from bob tx
 	var dataToSign []string
 	for _, tape := range output.Tape {
 		for _, cell := range tape.Cell {
@@ -182,7 +159,7 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm,
 	}
 
 	// Sign the data
-	a, err := Sign(privateKey, algorithm, strings.Join(dataToSign, ""), paymailAddress, paymailPubKey)
+	a, err := Sign(privateKey, algorithm, strings.Join(dataToSign, ""))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -196,8 +173,8 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm,
 			H: hex.EncodeToString([]byte(algorithm)),
 			S: string(algorithm),
 		}, {
-			H: hex.EncodeToString([]byte(paymailAddress)),
-			S: paymailAddress,
+			H: hex.EncodeToString([]byte(a.Address)),
+			S: a.Address,
 		}, {
 			H: hex.EncodeToString([]byte(a.Signature)),
 			S: a.Signature,
@@ -207,24 +184,11 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm,
 	return &output, a, nil
 }
 
-/*// SignOpReturnData will append the given data and return an output.Output
-func SignOpReturnData(privateKey string, algorithm Algorithm,
-	addressString string, data [][]byte) (*output.Output, *Aip, error) {
-
-	// get data to sign from bob tx
-	if algorithm == Paymail {
-		// pubkey is used, derive address
-		addr, err := bitcoin.GetAddressFromPubKeyString(addressString)
-		if err != nil {
-			return nil, nil, err
-		}
-		addressString = addr.String()
-	} else {
-		addressString = "" // todo: hack right now for the Sign() taking two types of signing methods
-	}
+// SignOpReturnData will append the given data and return an output.Output
+func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (*output.Output, *Aip, error) {
 
 	// Sign with AIP
-	a, err := Sign(privateKey, BitcoinECDSA, string(bytes.Join(data, []byte{})), addressString)
+	a, err := Sign(privateKey, algorithm, string(bytes.Join(data, []byte{})))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -246,67 +210,38 @@ func SignOpReturnData(privateKey string, algorithm Algorithm,
 
 	return out, a, nil
 }
-*/
 
 // Sign will provide an AIP signature for a given private key and message
 // Just set paymail = "" when using BitcoinECDSA signature
-// If you don't know the paymailPubKey leave it blank as it will be fetched from the Paymail provider
-func Sign(privateKey string, algorithm Algorithm, message, paymailAddress, paymailPubKey string) (*Aip, error) {
+func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err error) {
+
+	// Create the base AIP object
+	a = &Aip{Algorithm: algorithm, Data: []string{message}}
+	var sig string
+
 	// Sign using different algorithms
 	switch algorithm {
 	case BitcoinECDSA:
-		return SignUsingECDSA(privateKey, message)
+		if sig, err = bitcoin.SignMessage(privateKey, message); err != nil {
+			return
+		}
+		a.Signature = sig
+		var address string
+		if address, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
+			return
+		}
+		a.Address = address
 	case Paymail:
-		return SignUsingPaymailPubKey(privateKey, message, paymailAddress, paymailPubKey)
-	default:
-		return nil, fmt.Errorf("algorithm: %v unknown", algorithm)
+		if sig, err = bitcoin.SignMessage(privateKey, message); err != nil {
+			return
+		}
+		a.Signature = sig
+
+		// Get pubKey from private key and overload the address field in AIP
+		if a.Address, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
+			return
+		}
 	}
-}
-
-// SignUsingECDSA will use the BitcoinECDSA format for signing
-func SignUsingECDSA(privateKey, message string) (a *Aip, err error) {
-	a = &Aip{Algorithm: BitcoinECDSA, Data: []string{message}}
-	if a.Address, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
-		return
-	}
-	a.Signature, err = bitcoin.SignMessage(privateKey, message)
-	return
-}
-
-// SignUsingPaymail will use the Paymail format for signing
-func SignUsingPaymail(privateKey, message, paymailAddress string) (a *Aip, err error) {
-	a = &Aip{Algorithm: Paymail, Data: []string{message}}
-
-	// Set the paymail address
-	_, _, a.Paymail = paymail.SanitizePaymail(paymailAddress)
-
-	// Get the address via remote lookup
-	if err = a.GetAddressForPaymail(); err != nil {
-		return
-	}
-
-	// Sign the message
-	a.Signature, err = bitcoin.SignMessage(privateKey, message)
-	return
-}
-
-// SignUsingPaymailPubKey will sign using a given pubKey (Paymail)
-// This method is preferred to SignUsingPaymail() if you already have the pubKey present
-func SignUsingPaymailPubKey(privateKey, message, paymailAddress, pubKey string) (a *Aip, err error) {
-	a = &Aip{Algorithm: Paymail, Data: []string{message}}
-
-	// Set the paymail address
-	_, _, a.Paymail = paymail.SanitizePaymail(paymailAddress)
-
-	// Get the address from given paymailPubKey
-	var addr *bsvutil.LegacyAddressPubKeyHash
-	if addr, err = bitcoin.GetAddressFromPubKeyString(pubKey); err != nil {
-		return
-	}
-	a.Address = addr.String()
-
-	// Sign the message
-	a.Signature, err = bitcoin.SignMessage(privateKey, message)
 	return
 }
 
@@ -321,38 +256,6 @@ func ValidateTapes(tapes []bob.Tape) bool {
 		}
 	}
 	return false
-}
-
-// getPki will fetch the PKI info for a given paymail
-func getPki(paymailAddress string) (*paymail.PKI, error) {
-
-	// Load the client
-	client, err := paymail.NewClient(nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse the paymail address
-	alias, domain, _ := paymail.SanitizePaymail(paymailAddress)
-
-	// Find the srv record
-	var srv *net.SRV
-	srv, err = client.GetSRVRecord(paymail.DefaultServiceName, paymail.DefaultProtocol, domain)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get the capabilities to get the corresponding PKI endpoint url
-	var capabilities *paymail.Capabilities
-	if capabilities, err = client.GetCapabilities(srv.Target, paymail.DefaultPort); err != nil {
-		return nil, err
-	}
-
-	// Extract the PKI URL from the capabilities response
-	pkiURL := capabilities.GetString(paymail.BRFCPki, paymail.BRFCPkiAlternate)
-
-	// Get the actual PKI
-	return client.GetPKI(pkiURL, alias, domain)
 }
 
 // contains looks in a slice for a given value
