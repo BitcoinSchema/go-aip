@@ -43,8 +43,8 @@ func TestSetData(t *testing.T) {
 		t.Fatalf("error occurred: %s", err.Error())
 	}
 
-	aip := New()
-	aip.SetData(bobData.Out[0].Tape)
+	aip := &Aip{}
+	aip.SetDataFromTape(bobData.Out[0].Tape)
 
 	// 0x6a 1BAPSuaPnfGnSBM3GLV9yhxUdYe4vGbdMT ATTEST cf39fc55da24dc23eff1809e6e6cf32a0fe6aecc81296543e9ac84b8c501bac5 0 |
 	// 0x6a (OP_RETURN)  in ascii is 'j'
@@ -109,10 +109,9 @@ func TestSignUsingPaymail(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error occurred: %s", err.Error())
 	}
-	aipTx := New()
 
 	var signedOutput *bob.Output
-	signedOutput, err = aipTx.SignOpReturnData(bobTx.Out[0], Paymail, hex.EncodeToString(publicKey.SerializeCompressed()), pk)
+	signedOutput, _, err = SignBobOpReturnData(pk, Paymail, hex.EncodeToString(publicKey.SerializeCompressed()), bobTx.Out[0])
 	if err != nil {
 		t.Fatalf("error occurred: %s", err.Error())
 	}
