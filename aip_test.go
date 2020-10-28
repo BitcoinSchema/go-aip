@@ -111,7 +111,7 @@ func TestSignUsingPaymail(t *testing.T) {
 	}
 
 	var signedOutput *bob.Output
-	signedOutput, _, err = SignBobOpReturnData(pk, Paymail, hex.EncodeToString(publicKey.SerializeCompressed()), bobTx.Out[0])
+	signedOutput, _, err = SignBobOpReturnData(pk, Paymail, bobTx.Out[0], "some@domain.com", hex.EncodeToString(publicKey.SerializeCompressed()))
 	if err != nil {
 		t.Fatalf("error occurred: %s", err.Error())
 	}
