@@ -87,6 +87,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 			return
 		}
 	}
+
 	return
 }
 
