@@ -217,19 +217,20 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	// Create the base AIP object
 	a = &Aip{Algorithm: algorithm, Data: []string{message}}
 
-	// Sign using different algorithms
+	// Sign using the private key and the message
+	if a.Signature, err = bitcoin.SignMessage(privateKey, message); err != nil {
+		return
+	}
+
+	// Store address vs pubkey
 	switch algorithm {
 	case BitcoinECDSA:
-		if a.Signature, err = bitcoin.SignMessage(privateKey, message); err != nil {
-			return
-		}
+
+		// Get the address of the private key
 		if a.Address, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
 			return
 		}
 	case Paymail:
-		if a.Signature, err = bitcoin.SignMessage(privateKey, message); err != nil {
-			return
-		}
 
 		// Get pubKey from private key and overload the address field in AIP
 		if a.Address, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
