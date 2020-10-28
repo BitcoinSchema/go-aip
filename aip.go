@@ -24,19 +24,20 @@ const pipe = "|"
 // Algorithm is an enum for the different possible signature algorithms
 type Algorithm string
 
-// Algorithms
+// Algorithm names
 const (
-	BitcoinECDSA Algorithm = "BITCOIN_ECDSA"
-	Paymail      Algorithm = "paymail"
+	BitcoinECDSA         Algorithm = "BITCOIN_ECDSA"        // Backwards compatible for BitcoinSignedMessage
+	BitcoinSignedMessage Algorithm = "BitcoinSignedMessage" // New algo name
+	Paymail              Algorithm = "paymail"              // Using "pubkey" as aip.Address
 )
 
 // Aip is an Author Identity Protocol object
 type Aip struct {
-	Algorithm Algorithm
-	Address   string
-	Data      []string
-	Signature string
-	Indices   []int `json:"indices,omitempty" bson:"indices,omitempty"`
+	Algorithm                 Algorithm `json:"algorithm"`                   // Known AIP algorithm type
+	AlgorithmSigningComponent string    `json:"algorithm_signing_component"` // Changes based on the Algorithm
+	Data                      []string  `json:"data"`                        // Data to be signed or validated
+	Indices                   []int     `json:"indices,omitempty"`           // BOB indices
+	Signature                 string    `json:"signature"`                   // AIP generated signature
 }
 
 // FromTape takes a BOB Tape and returns a Aip data structure.
@@ -48,7 +49,7 @@ func (a *Aip) FromTape(tape bob.Tape) {
 	}
 
 	a.Algorithm = Algorithm(tape.Cell[1].S)
-	a.Address = tape.Cell[2].S
+	a.AlgorithmSigningComponent = tape.Cell[2].S
 	a.Signature = tape.Cell[3].B // Is this B or S????
 
 	if len(tape.Cell) > 4 {
@@ -109,29 +110,25 @@ func (a *Aip) SetDataFromTape(tapes []bob.Tape) {
 
 // Validate returns true if the given AIP signature is valid for given data
 func (a *Aip) Validate() bool {
-	if len(a.Data) == 0 {
+
+	// Both data and component are required
+	if len(a.Data) == 0 || len(a.AlgorithmSigningComponent) == 0 {
 		return false
 	}
-	switch a.Algorithm {
-	case BitcoinECDSA:
-		// Validate verifies a Bitcoin signed message signature
-		return bitcoin.VerifyMessage(a.Address, a.Signature, strings.Join(a.Data, "")) == nil
-	case Paymail:
-		if len(a.Address) == 0 {
-			return false
-		}
+
+	// Convert pubkey to address
+	if a.Algorithm == Paymail {
 
 		// Get the public address for this paymail from pki
-		addr, err := bitcoin.GetAddressFromPubKeyString(a.Address)
+		addr, err := bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent)
 		if err != nil {
 			return false
 		}
-
-		// You get the address associated with the pki instead of the current address
-		return bitcoin.VerifyMessage(addr.String(), a.Signature, strings.Join(a.Data, "")) == nil
-	default:
-		return false
+		a.AlgorithmSigningComponent = addr.String()
 	}
+
+	// You get the address associated with the pki instead of the current address
+	return bitcoin.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, strings.Join(a.Data, "")) == nil
 }
 
 // NewFromTape will create a new AIP object from a bob.Tape
@@ -142,9 +139,10 @@ func NewFromTape(tape bob.Tape) (a *Aip) {
 }
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
-// protocol separator push_data followed by AIP information
+// protocol separator followed by AIP information
 func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Output) (*bob.Output, *Aip, error) {
 
+	// Parse the data to sign
 	var dataToSign []string
 	for _, tape := range output.Tape {
 		for _, cell := range tape.Cell {
@@ -173,8 +171,8 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 			H: hex.EncodeToString([]byte(algorithm)),
 			S: string(algorithm),
 		}, {
-			H: hex.EncodeToString([]byte(a.Address)),
-			S: a.Address,
+			H: hex.EncodeToString([]byte(a.AlgorithmSigningComponent)),
+			S: a.AlgorithmSigningComponent,
 		}, {
 			H: hex.EncodeToString([]byte(a.Signature)),
 			S: a.Signature,
@@ -185,12 +183,11 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 }
 
 // SignOpReturnData will append the given data and return an output.Output
-func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (*output.Output, *Aip, error) {
+func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (out *output.Output, a *Aip, err error) {
 
 	// Sign with AIP
-	a, err := Sign(privateKey, algorithm, string(bytes.Join(data, []byte{})))
-	if err != nil {
-		return nil, nil, err
+	if a, err = Sign(privateKey, algorithm, string(bytes.Join(data, []byte{}))); err != nil {
+		return
 	}
 
 	// Add AIP signature
@@ -198,17 +195,13 @@ func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (*o
 		data,
 		[]byte(Prefix),
 		[]byte(a.Algorithm),
-		[]byte(a.Address),
+		[]byte(a.AlgorithmSigningComponent),
 		[]byte(a.Signature),
 	)
 
 	// Create the output
-	var out *output.Output
-	if out, err = output.NewOpReturnParts(data); err != nil {
-		return nil, nil, err
-	}
-
-	return out, a, nil
+	out, err = output.NewOpReturnParts(data)
+	return
 }
 
 // Sign will provide an AIP signature for a given private key and message
@@ -224,16 +217,16 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 
 	// Store address vs pubkey
 	switch algorithm {
-	case BitcoinECDSA:
+	case BitcoinECDSA, BitcoinSignedMessage:
 
 		// Get the address of the private key
-		if a.Address, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
+		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
 			return
 		}
 	case Paymail:
 
 		// Get pubKey from private key and overload the address field in AIP
-		if a.Address, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
+		if a.AlgorithmSigningComponent, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
 			return
 		}
 	}
