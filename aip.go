@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
+	"github.com/bitcoinschema/go-bob"
 	"github.com/bitcoinsv/bsvutil"
-	"github.com/rohenaz/go-bob"
 	"github.com/tonicpow/go-paymail"
 )
 
@@ -146,9 +146,13 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm,
 		addressString = addr.String()
 	}
 
-	a.Sign(privKey, strings.Join(dataToSign, ""), algorithm, addressString)
+	err := a.Sign(privKey, strings.Join(dataToSign, ""), algorithm, addressString)
+	if err != nil {
+		log.Println("Failed to sign", err)
+	}
 	a.Data = dataToSign
 
+	log.Printf("Signed data: %s Signature %s", dataToSign, a.Signature)
 	output.Tape = append(output.Tape, bob.Tape{
 		Cell: []bob.Cell{{
 			H: hex.EncodeToString([]byte(Prefix)),
@@ -170,7 +174,7 @@ func (a *Aip) SignOpReturnData(output bob.Output, algorithm Algorithm,
 
 // Sign will provide an AIP signature for a given private key and data.
 // Just set paymail = "" when using BITCOIN_ECDSA signature
-func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail string) (ok bool) {
+func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail string) (err error) {
 
 	// pk = bsvec.PrivateKey
 	// pk.Sign(data)
@@ -178,28 +182,28 @@ func (a *Aip) Sign(privKey string, message string, algorithm Algorithm, paymail 
 	case BitcoinECDSA:
 		if paymail != "" {
 			// Error if paymail is provided, but algorithm is BITCOIN_ECDSA
-			return
+			return err
 		}
 		sig, err := bitcoin.SignMessage(privKey, message)
 		if err != nil {
-			return
+			return err
 		}
 		a.Signature = sig
 		address, err := bitcoin.GetAddressFromPrivateKey(privKey)
 		if err != nil {
-			return
+			return err
 		}
 		a.Address = address
 	case Paymail:
 		sig, err := bitcoin.SignMessage(privKey, message)
 		if err != nil {
-			return
+			return err
 		}
 		a.Signature = sig
 		a.Address = paymail
 	}
 	a.Algorithm = algorithm
-	return true
+	return nil
 }
 
 func getPki(paymailString string) (*paymail.PKI, error) {
