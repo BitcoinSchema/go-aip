@@ -212,30 +212,24 @@ func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (*o
 }
 
 // Sign will provide an AIP signature for a given private key and message
-// Just set paymail = "" when using BitcoinECDSA signature
 func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err error) {
 
 	// Create the base AIP object
 	a = &Aip{Algorithm: algorithm, Data: []string{message}}
-	var sig string
 
 	// Sign using different algorithms
 	switch algorithm {
 	case BitcoinECDSA:
-		if sig, err = bitcoin.SignMessage(privateKey, message); err != nil {
+		if a.Signature, err = bitcoin.SignMessage(privateKey, message); err != nil {
 			return
 		}
-		a.Signature = sig
-		var address string
-		if address, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
+		if a.Address, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
 			return
 		}
-		a.Address = address
 	case Paymail:
-		if sig, err = bitcoin.SignMessage(privateKey, message); err != nil {
+		if a.Signature, err = bitcoin.SignMessage(privateKey, message); err != nil {
 			return
 		}
-		a.Signature = sig
 
 		// Get pubKey from private key and overload the address field in AIP
 		if a.Address, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
