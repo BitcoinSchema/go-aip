@@ -92,7 +92,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 }
 
 // SignOpReturnData will append the given data and return an output.Output
-func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (out *output.Output, a *Aip, err error) {
+func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (out *output.Output, outData [][]byte, a *Aip, err error) {
 
 	// Sign with AIP
 	if a, err = Sign(privateKey, algorithm, string(bytes.Join(data, []byte{}))); err != nil {
@@ -100,7 +100,7 @@ func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (ou
 	}
 
 	// Add AIP signature
-	data = append(
+	outData = append(
 		data,
 		[]byte(Prefix),
 		[]byte(a.Algorithm),
@@ -109,6 +109,6 @@ func SignOpReturnData(privateKey string, algorithm Algorithm, data [][]byte) (ou
 	)
 
 	// Create the output
-	out, err = output.NewOpReturnParts(data)
+	out, err = output.NewOpReturnParts(outData)
 	return
 }

@@ -349,7 +349,7 @@ func TestSignOpReturnData(t *testing.T) {
 
 	// Run tests
 	for _, test := range tests {
-		if out, a, err := SignOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
+		if out, _, a, err := SignOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
 		} else if err == nil && test.expectedError {
 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
@@ -371,7 +371,7 @@ func TestSignOpReturnData(t *testing.T) {
 
 // ExampleSignOpReturnData example using SignOpReturnData()
 func ExampleSignOpReturnData() {
-	out, a, err := SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
+	out, _, a, err := SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
 	if err != nil {
 		fmt.Printf("error occurred: %s", err.Error())
 		return
@@ -383,6 +383,6 @@ func ExampleSignOpReturnData() {
 // BenchmarkSignOpReturnData benchmarks the method SignOpReturnData()
 func BenchmarkSignOpReturnData(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, _, _ = SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
+		_, _, _, _ = SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
 	}
 }
