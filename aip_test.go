@@ -136,9 +136,9 @@ func TestSign(t *testing.T) {
 		} else if err == nil && test.expectedError {
 			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
 		} else if a == nil && !test.expectedNil {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and nil was not expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and nil was not expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
 		} else if a != nil && test.expectedNil {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and nil was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and nil was expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
 		} else if a != nil && a.Signature != test.expectedSignature {
 			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and expected [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, test.expectedSignature, a.Signature)
 		} else if a != nil && err == nil {
@@ -354,13 +354,13 @@ func TestSignOpReturnData(t *testing.T) {
 		} else if err == nil && test.expectedError {
 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a == nil && !test.expectedAipNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a != nil && test.expectedAipNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if out == nil && !test.expectedOutNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if out != nil && test.expectedOutNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a != nil && a.Signature != test.expectedSignature {
 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
 		} else if out != nil && out.GetLockingScriptHexString() != test.expectedOutput {

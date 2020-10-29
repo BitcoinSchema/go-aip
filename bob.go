@@ -37,9 +37,9 @@ func (a *Aip) FromTape(tape bob.Tape) {
 		// Loop over remaining indices if they exist and append to indices slice
 		a.Indices = make([]int, len(tape.Cell)-4)
 		for x := 4; x < len(tape.Cell); x++ {
-			index, err := strconv.ParseUint(tape.Cell[x].S, 10, 64)
+			index, err := strconv.Atoi(tape.Cell[x].S)
 			if err == nil {
-				a.Indices = append(a.Indices, int(index))
+				a.Indices = append(a.Indices, index)
 			}
 		}
 	}
@@ -48,12 +48,15 @@ func (a *Aip) FromTape(tape bob.Tape) {
 // NewFromTapes will create a new AIP object from a []bob.Tape
 // Using the FromTapes() alone will prevent validation (data is needed via SetData to enable)
 func NewFromTapes(tapes []bob.Tape) (a *Aip) {
+	// Loop tapes -> cells (only supporting 1 sig right now)
 	for _, t := range tapes {
-		if len(t.Cell) > 0 && t.Cell[0].S == Prefix {
-			a = new(Aip)
-			a.FromTape(t)
-			a.SetDataFromTapes(tapes)
-			return
+		for _, cell := range t.Cell {
+			if cell.S == Prefix {
+				a = new(Aip)
+				a.FromTape(t)
+				a.SetDataFromTapes(tapes)
+				return
+			}
 		}
 	}
 	return
@@ -147,13 +150,18 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 
 // ValidateTapes validates the AIP signature for a given []bob.Tape
 func ValidateTapes(tapes []bob.Tape) bool {
+	// Loop tapes -> cells (only supporting 1 sig right now)
 	for _, tape := range tapes {
-		// Once we hit AIP Prefix, stop
-		if tape.Cell[0].S == Prefix {
-			a := NewFromTape(tape)
-			a.SetDataFromTapes(tapes)
-			return a.Validate()
+		for _, cell := range tape.Cell {
+
+			// Once we hit AIP Prefix, stop
+			if cell.S == Prefix {
+				a := NewFromTape(tape)
+				a.SetDataFromTapes(tapes)
+				return a.Validate()
+			}
 		}
+
 	}
 	return false
 }
