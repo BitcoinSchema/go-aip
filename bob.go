@@ -9,6 +9,7 @@ import (
 )
 
 // NewFromTape will create a new AIP object from a bob.Tape
+// Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
 func NewFromTape(tape bob.Tape) (a *Aip) {
 	a = new(Aip)
 	a.FromTape(tape)
@@ -73,30 +74,35 @@ func ValidateTapes(tapes []bob.Tape) bool {
 }
 
 // FromTape takes a BOB Tape and returns a Aip data structure.
-// Using from tape alone will prevent validation (data is needed via SetData to enable)
+// Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
 func (a *Aip) FromTape(tape bob.Tape) {
 
+	// Not a valid tape?
 	if len(tape.Cell) < 4 || tape.Cell[0].S != Prefix {
 		return
 	}
 
+	// Set the AIP fields
 	a.Algorithm = Algorithm(tape.Cell[1].S)
 	a.AlgorithmSigningComponent = tape.Cell[2].S
 	a.Signature = tape.Cell[3].B // Is this B or S????
 
+	// Store the indices
 	if len(tape.Cell) > 4 {
-
-		a.Indices = make([]int, len(tape.Cell)-4)
 
 		// TODO: Consider OP_RETURN is included in sig when processing a tx using indices
 		// Loop over remaining indices if they exist and append to indices slice
+		a.Indices = make([]int, len(tape.Cell)-4)
 		for x := 4; x < len(tape.Cell); x++ {
-			index, _ := strconv.ParseUint(tape.Cell[x].S, 10, 64)
-			// todo: check error?
-			a.Indices = append(a.Indices, int(index))
+			index, err := strconv.ParseUint(tape.Cell[x].S, 10, 64)
+			if err == nil {
+				a.Indices = append(a.Indices, int(index))
+			}
 		}
 	}
 }
+
+// todo: FromTapes() - looks through tapes trying to detect AIP
 
 // SetDataFromTape sets the data the AIP signature is signing
 func (a *Aip) SetDataFromTape(tapes []bob.Tape) {
