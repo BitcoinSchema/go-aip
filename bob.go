@@ -9,10 +9,99 @@ import (
 )
 
 // NewFromTape will create a new AIP object from a bob.Tape
+// Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
 func NewFromTape(tape bob.Tape) (a *Aip) {
 	a = new(Aip)
 	a.FromTape(tape)
 	return
+}
+
+// FromTape takes a BOB Tape and returns a Aip data structure.
+// Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
+func (a *Aip) FromTape(tape bob.Tape) {
+
+	// Not a valid tape?
+	if len(tape.Cell) < 4 || tape.Cell[0].S != Prefix {
+		return
+	}
+
+	// Set the AIP fields
+	a.Algorithm = Algorithm(tape.Cell[1].S)
+	a.AlgorithmSigningComponent = tape.Cell[2].S
+	a.Signature = tape.Cell[3].B
+
+	// Store the indices
+	if len(tape.Cell) > 4 {
+
+		// TODO: Consider OP_RETURN is included in sig when processing a tx using indices
+		// Loop over remaining indices if they exist and append to indices slice
+		a.Indices = make([]int, len(tape.Cell)-4)
+		for x := 4; x < len(tape.Cell); x++ {
+			index, err := strconv.Atoi(tape.Cell[x].S)
+			if err == nil {
+				a.Indices = append(a.Indices, index)
+			}
+		}
+	}
+}
+
+// NewFromTapes will create a new AIP object from a []bob.Tape
+// Using the FromTapes() alone will prevent validation (data is needed via SetData to enable)
+func NewFromTapes(tapes []bob.Tape) (a *Aip) {
+	// Loop tapes -> cells (only supporting 1 sig right now)
+	for _, t := range tapes {
+		for _, cell := range t.Cell {
+			if cell.S == Prefix {
+				a = new(Aip)
+				a.FromTape(t)
+				a.SetDataFromTapes(tapes)
+				return
+			}
+		}
+	}
+	return
+}
+
+// SetDataFromTapes sets the data the AIP signature is signing
+func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
+
+	var data = []string{"j"}
+
+	if len(a.Indices) == 0 {
+
+		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
+		for _, tape := range tapes {
+			for _, cell := range tape.Cell {
+				if cell.S != Prefix {
+					// Skip the OPS
+					if cell.Ops != "" {
+						continue
+					}
+					data = append(data, cell.S)
+				} else {
+					data = append(data, pipe)
+					a.Data = data
+					return
+				}
+			}
+		}
+
+	} else {
+		var indexCt = 0
+
+		for _, tape := range tapes {
+			for _, cell := range tape.Cell {
+				if cell.S != Prefix && contains(a.Indices, indexCt) {
+					data = append(data, cell.S)
+				} else {
+					data = append(data, pipe)
+				}
+				indexCt++
+			}
+		}
+
+		a.Data = data
+	}
 }
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
@@ -61,83 +150,20 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 
 // ValidateTapes validates the AIP signature for a given []bob.Tape
 func ValidateTapes(tapes []bob.Tape) bool {
+	// Loop tapes -> cells (only supporting 1 sig right now)
 	for _, tape := range tapes {
-		// Once we hit AIP Prefix, stop
-		if tape.Cell[0].S == Prefix {
-			a := NewFromTape(tape)
-			a.SetDataFromTape(tapes)
-			return a.Validate()
+		for _, cell := range tape.Cell {
+
+			// Once we hit AIP Prefix, stop
+			if cell.S == Prefix {
+				a := NewFromTape(tape)
+				a.SetDataFromTapes(tapes)
+				return a.Validate()
+			}
 		}
+
 	}
 	return false
-}
-
-// FromTape takes a BOB Tape and returns a Aip data structure.
-// Using from tape alone will prevent validation (data is needed via SetData to enable)
-func (a *Aip) FromTape(tape bob.Tape) {
-
-	if len(tape.Cell) < 4 || tape.Cell[0].S != Prefix {
-		return
-	}
-
-	a.Algorithm = Algorithm(tape.Cell[1].S)
-	a.AlgorithmSigningComponent = tape.Cell[2].S
-	a.Signature = tape.Cell[3].B // Is this B or S????
-
-	if len(tape.Cell) > 4 {
-
-		a.Indices = make([]int, len(tape.Cell)-4)
-
-		// TODO: Consider OP_RETURN is included in sig when processing a tx using indices
-		// Loop over remaining indices if they exist and append to indices slice
-		for x := 4; x < len(tape.Cell); x++ {
-			index, _ := strconv.ParseUint(tape.Cell[x].S, 10, 64)
-			// todo: check error?
-			a.Indices = append(a.Indices, int(index))
-		}
-	}
-}
-
-// SetDataFromTape sets the data the AIP signature is signing
-func (a *Aip) SetDataFromTape(tapes []bob.Tape) {
-
-	var data = []string{"j"}
-
-	if len(a.Indices) == 0 {
-
-		// walk over all output values and concatenate them until we hit the aip prefix, then add in the separator
-		for _, tape := range tapes {
-			for _, cell := range tape.Cell {
-				if cell.S != Prefix {
-					// Skip the OPS
-					if cell.Ops != "" {
-						continue
-					}
-					data = append(data, cell.S)
-				} else {
-					data = append(data, pipe)
-					a.Data = data
-					return
-				}
-			}
-		}
-
-	} else {
-		var indexCt = 0
-
-		for _, tape := range tapes {
-			for _, cell := range tape.Cell {
-				if cell.S != Prefix && contains(a.Indices, indexCt) {
-					data = append(data, cell.S)
-				} else {
-					data = append(data, pipe)
-				}
-				indexCt++
-			}
-		}
-
-		a.Data = data
-	}
 }
 
 // contains looks in a slice for a given value
