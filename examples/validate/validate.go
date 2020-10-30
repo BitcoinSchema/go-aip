@@ -15,9 +15,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("error occurred: %s", err.Error())
 	}
-	if a.Validate() {
+	if _, err = a.Validate(); err == nil {
 		log.Printf("signature is valid: %s", a.Signature)
 	} else {
-		log.Fatal("signature failed validiation")
+		log.Fatalf("signature failed validation: %s", err.Error())
 	}
 }

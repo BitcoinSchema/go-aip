@@ -2,6 +2,7 @@ package aip
 
 import (
 	"encoding/hex"
+	"errors"
 	"strconv"
 	"strings"
 
@@ -21,24 +22,35 @@ func NewFromTape(tape bob.Tape) (a *Aip) {
 func (a *Aip) FromTape(tape bob.Tape) {
 
 	// Not a valid tape?
-	if len(tape.Cell) < 4 || tape.Cell[0].S != Prefix {
+	if len(tape.Cell) < 4 {
 		return
 	}
 
+	// Loop to find start of AIP
+	var startIndex int
+	for i, cell := range tape.Cell {
+		if cell.S == Prefix {
+			startIndex = i
+			break
+		}
+	}
+
 	// Set the AIP fields
-	a.Algorithm = Algorithm(tape.Cell[1].S)
-	a.AlgorithmSigningComponent = tape.Cell[2].S
-	a.Signature = tape.Cell[3].B
+	a.Algorithm = Algorithm(tape.Cell[startIndex+1].S)
+	a.AlgorithmSigningComponent = tape.Cell[startIndex+2].S
+	a.Signature = tape.Cell[startIndex+3].B
+
+	// Final index count
+	finalIndexCount := startIndex + 4
 
 	// Store the indices
-	if len(tape.Cell) > 4 {
+	if len(tape.Cell) > finalIndexCount {
 
 		// TODO: Consider OP_RETURN is included in sig when processing a tx using indices
 		// Loop over remaining indices if they exist and append to indices slice
-		a.Indices = make([]int, len(tape.Cell)-4)
-		for x := 4; x < len(tape.Cell); x++ {
-			index, err := strconv.Atoi(tape.Cell[x].S)
-			if err == nil {
+		a.Indices = make([]int, len(tape.Cell)-finalIndexCount)
+		for x := finalIndexCount - 1; x < len(tape.Cell); x++ {
+			if index, err := strconv.Atoi(tape.Cell[x].S); err == nil {
 				a.Indices = append(a.Indices, index)
 			}
 		}
@@ -77,7 +89,7 @@ func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 					if cell.Ops != "" {
 						continue
 					}
-					data = append(data, cell.S)
+					data = append(data, strings.TrimSpace(cell.S))
 				} else {
 					data = append(data, pipe)
 					a.Data = data
@@ -87,6 +99,7 @@ func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 		}
 
 	} else {
+
 		var indexCt = 0
 
 		for _, tape := range tapes {
@@ -149,7 +162,7 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 }
 
 // ValidateTapes validates the AIP signature for a given []bob.Tape
-func ValidateTapes(tapes []bob.Tape) bool {
+func ValidateTapes(tapes []bob.Tape) (bool, error) {
 	// Loop tapes -> cells (only supporting 1 sig right now)
 	for _, tape := range tapes {
 		for _, cell := range tape.Cell {
@@ -163,7 +176,7 @@ func ValidateTapes(tapes []bob.Tape) bool {
 		}
 
 	}
-	return false
+	return false, errors.New("no AIP tape found")
 }
 
 // contains looks in a slice for a given value

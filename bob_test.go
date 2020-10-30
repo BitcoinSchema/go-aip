@@ -76,11 +76,11 @@ func TestNewFromTape(t *testing.T) {
 		} else if a != nil && a.AlgorithmSigningComponent != test.expectedComponent {
 			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes[test.inputIndex], test.expectedComponent, a.AlgorithmSigningComponent)
 		} else if a != nil && len(test.inputTapes) > 1 {
-			valid := ValidateTapes(test.inputTapes)
+			valid, err := ValidateTapes(test.inputTapes)
 			if valid && !test.expectedValidation {
 				t.Errorf("%s Failed: [%v] inputted and validation should have failed", t.Name(), test.inputTapes)
 			} else if !valid && test.expectedValidation {
-				t.Errorf("%s Failed: [%v] inputted and validation should have passed", t.Name(), test.inputTapes)
+				t.Errorf("%s Failed: [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputTapes, err.Error())
 			}
 		}
 	}
@@ -192,11 +192,12 @@ func TestNewFromTapes(t *testing.T) {
 		} else if a != nil && len(a.Data) > 0 && a.Data[2] != test.expectedData2 {
 			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedData2, a.Data[2])
 		} else if a != nil && len(test.inputTapes) > 1 {
-			valid := ValidateTapes(test.inputTapes)
+			var valid bool
+			valid, err = ValidateTapes(test.inputTapes)
 			if valid && !test.expectedValidation {
 				t.Errorf("%s Failed: [%v] inputted and validation should have failed", t.Name(), test.inputTapes)
-			} else if !valid && test.expectedValidation {
-				t.Errorf("%s Failed: [%v] inputted and validation should have passed", t.Name(), test.inputTapes)
+			} else if !valid && test.expectedValidation && err != nil {
+				t.Errorf("%s Failed: [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputTapes, err.Error())
 			}
 		}
 	}
@@ -263,10 +264,10 @@ func TestValidateTapes(t *testing.T) {
 
 	// Run tests
 	for _, test := range tests {
-		if valid := ValidateTapes(test.inputTapes); valid && !test.expectedValidation {
+		if valid, err := ValidateTapes(test.inputTapes); valid && !test.expectedValidation {
 			t.Errorf("%s Failed: [%v] inputted and validation should have failed", t.Name(), test.inputTapes)
-		} else if !valid && test.expectedValidation {
-			t.Errorf("%s Failed: [%v] inputted and validation should have passed", t.Name(), test.inputTapes)
+		} else if !valid && test.expectedValidation && err != nil {
+			t.Errorf("%s Failed: [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputTapes, err.Error())
 		}
 	}
 }
@@ -281,10 +282,10 @@ func ExampleValidateTapes() {
 	}
 
 	// Get from tape
-	if ValidateTapes(bobValidData.Out[0].Tape) {
+	if valid, err := ValidateTapes(bobValidData.Out[0].Tape); valid {
 		fmt.Print("AIP is valid")
-	} else {
-		fmt.Print("AIP is invalid")
+	} else if err != nil {
+		fmt.Printf("AIP is invalid: %s", err.Error())
 	}
 	// Output:AIP is valid
 }
@@ -293,7 +294,7 @@ func ExampleValidateTapes() {
 func BenchmarkValidateTapes(b *testing.B) {
 	bobValidData, _ := bob.NewFromString(sampleValidBobTx)
 	for i := 0; i < b.N; i++ {
-		_ = ValidateTapes(bobValidData.Out[0].Tape)
+		_, _ = ValidateTapes(bobValidData.Out[0].Tape)
 	}
 }
 
@@ -379,11 +380,11 @@ func TestSignBobOpReturnData(t *testing.T) {
 		} else if a != nil && a.Signature != test.expectedSignature {
 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
 		} else if a != nil {
-			valid := a.Validate()
-			if valid && !test.expectedValidation {
+			var valid bool
+			if valid, err = a.Validate(); valid && !test.expectedValidation {
 				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have failed", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-			} else if !valid && test.expectedValidation {
-				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have passed", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			} else if !valid && test.expectedValidation && err != nil {
+				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
 			}
 		}
 	}

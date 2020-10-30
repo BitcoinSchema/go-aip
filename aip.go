@@ -8,6 +8,7 @@ package aip
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
@@ -38,11 +39,11 @@ type Aip struct {
 }
 
 // Validate returns true if the given AIP signature is valid for given data
-func (a *Aip) Validate() bool {
+func (a *Aip) Validate() (bool, error) {
 
 	// Both data and component are required
 	if len(a.Data) == 0 || len(a.AlgorithmSigningComponent) == 0 {
-		return false
+		return false, errors.New("missing data or signing component")
 	}
 
 	// Convert pubkey to address
@@ -51,13 +52,14 @@ func (a *Aip) Validate() bool {
 		// Get the public address for this paymail from pki
 		addr, err := bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent)
 		if err != nil {
-			return false
+			return false, err
 		}
 		a.AlgorithmSigningComponent = addr.String()
 	}
 
 	// You get the address associated with the pki instead of the current address
-	return bitcoin.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, strings.Join(a.Data, "")) == nil
+	err := bitcoin.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, strings.Join(a.Data, ""))
+	return err == nil, err
 }
 
 // Sign will provide an AIP signature for a given private key and message using
@@ -81,7 +83,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 			return
 		}
 	case Paymail:
-		// Signingc omponent = paymail identity key
+		// Signing component = paymail identity key
 		// Get pubKey from private key and overload the address field in AIP
 		if a.AlgorithmSigningComponent, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
 			return
