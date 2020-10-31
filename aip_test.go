@@ -250,7 +250,7 @@ func TestAip_Validate(t *testing.T) {
 	for _, test := range tests {
 		if valid, err := test.inputAip.Validate(); valid && !test.expectedValid {
 			t.Errorf("%s Failed: [%v] inputted and was valid but should NOT be valid", t.Name(), test.inputAip)
-		} else if !valid && test.expectedValid {
+		} else if !valid && test.expectedValid && err != nil {
 			t.Errorf("%s Failed: [%v] inputted and NOT valid but should be valid, error: %s", t.Name(), test.inputAip, err.Error())
 		}
 	}

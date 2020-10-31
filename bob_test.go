@@ -79,7 +79,7 @@ func TestNewFromTape(t *testing.T) {
 			valid, err := ValidateTapes(test.inputTapes)
 			if valid && !test.expectedValidation {
 				t.Errorf("%s Failed: [%v] inputted and validation should have failed", t.Name(), test.inputTapes)
-			} else if !valid && test.expectedValidation {
+			} else if !valid && test.expectedValidation && err != nil {
 				t.Errorf("%s Failed: [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputTapes, err.Error())
 			}
 		}
