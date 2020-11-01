@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/bitcoinschema/go-bob"
+	"github.com/btcsuite/btcd/txscript"
 )
 
 const examplePrivateKey = "54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd"
@@ -37,7 +38,7 @@ func TestSign(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				Paymail,
 				exampleMessage,
-				"IL1f9X5R//+1X+nBf4alcMe+Fom0Dtv5J4R+LBHiDyHYSt6OZqvuX3tTHwZefg/iXu/lsAScd2ekQci+wtbDyic=",
+				"GwJif5FKr6rPpKYghZ7F7Rmaw00q5nWo6NiJOuje+6WBOM6qd8MlVnbWr2mrrA+aaDatHxavR8JTckpSfx1RJ1o=",
 				false,
 				false,
 			},
@@ -61,7 +62,7 @@ func TestSign(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				BitcoinECDSA,
 				"",
-				"H3/iGpfMJCLPiM9w9p1a35ZQ9YoVrVRXpii6TGRHc4RHWSEhGVaQ0buAnATiecttBWJrNKfE2zXQroxcIHpN3ag=",
+				"G0ttfuC/XKY60ZRFmb12lARUJUekPJ1nD/f0WvJ94bJxT5U3SFHgHaJvAo1r/tVe1E0pMX+IuUxfOWckXdIS7wI=",
 				false,
 				false,
 			},
@@ -85,7 +86,7 @@ func TestSign(t *testing.T) {
 				"e83385af76b2b1997326b567461fb73dd9c27eab9e1e86d26779f4650c5f2b75",
 				BitcoinECDSA,
 				exampleMessage,
-				"IGtOmD/drk1w39g5U5xccky32Fj8eR71Ld/7lzEw+Sr7CU5rMJ1yeDte4eakr0YQMp9ZI57YYKS7cqjA5l6YpGs=",
+				"G2m+m3KyHeoWcJF7Sj09bzF+td7QjVw+baFJJ3VCTG4qfaMGXtx8roWprfXi5qP7NihY5lkfWCKCngnodWmG104=",
 				false,
 				false,
 			},
@@ -93,7 +94,7 @@ func TestSign(t *testing.T) {
 				"e83385af76b2b1997326b567461fb73dd9c27eab9e1e86d26779f4650c5f2b75",
 				BitcoinSignedMessage,
 				exampleMessage,
-				"IGtOmD/drk1w39g5U5xccky32Fj8eR71Ld/7lzEw+Sr7CU5rMJ1yeDte4eakr0YQMp9ZI57YYKS7cqjA5l6YpGs=",
+				"G2m+m3KyHeoWcJF7Sj09bzF+td7QjVw+baFJJ3VCTG4qfaMGXtx8roWprfXi5qP7NihY5lkfWCKCngnodWmG104=",
 				false,
 				false,
 			},
@@ -101,7 +102,7 @@ func TestSign(t *testing.T) {
 				"e83385af76b2b1997326b567461fb73dd9c27eab9e1e86d26779f4650c5f2b75",
 				Paymail,
 				exampleMessage,
-				"IGtOmD/drk1w39g5U5xccky32Fj8eR71Ld/7lzEw+Sr7CU5rMJ1yeDte4eakr0YQMp9ZI57YYKS7cqjA5l6YpGs=",
+				"G2m+m3KyHeoWcJF7Sj09bzF+td7QjVw+baFJJ3VCTG4qfaMGXtx8roWprfXi5qP7NihY5lkfWCKCngnodWmG104=",
 				false,
 				false,
 			},
@@ -109,7 +110,7 @@ func TestSign(t *testing.T) {
 				"73646673676572676164666764666761646667616466",
 				BitcoinECDSA,
 				exampleMessage,
-				"IMlJxr2jImPKkuh5QQPmyRkNCiwsYC1uKOicBf1j69AZRqUmA3bVGylmNERlXMXtuweVzV3E40OtVckCxDfVhY8=",
+				"HIRS8UIWLYMwQUaiIDpe0ivhUqQVyHJg1kgOd/rviQJZWe2EFEI7PQblLaZofG+MjLCMbQLxzlV7DOAuFIdxNUc=",
 				false,
 				false,
 			},
@@ -117,7 +118,7 @@ func TestSign(t *testing.T) {
 				"73646673676572676164666764666761646667616466",
 				BitcoinSignedMessage,
 				exampleMessage,
-				"IMlJxr2jImPKkuh5QQPmyRkNCiwsYC1uKOicBf1j69AZRqUmA3bVGylmNERlXMXtuweVzV3E40OtVckCxDfVhY8=",
+				"HIRS8UIWLYMwQUaiIDpe0ivhUqQVyHJg1kgOd/rviQJZWe2EFEI7PQblLaZofG+MjLCMbQLxzlV7DOAuFIdxNUc=",
 				false,
 				false,
 			},
@@ -125,7 +126,7 @@ func TestSign(t *testing.T) {
 				"73646673676572676164666764666761646667616466",
 				Paymail,
 				exampleMessage,
-				"IMlJxr2jImPKkuh5QQPmyRkNCiwsYC1uKOicBf1j69AZRqUmA3bVGylmNERlXMXtuweVzV3E40OtVckCxDfVhY8=",
+				"HIRS8UIWLYMwQUaiIDpe0ivhUqQVyHJg1kgOd/rviQJZWe2EFEI7PQblLaZofG+MjLCMbQLxzlV7DOAuFIdxNUc=",
 				false,
 				false,
 			},
@@ -161,7 +162,7 @@ func ExampleSign() {
 		return
 	}
 	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
-	// Output:address: 1DfGxKmgL3ETwUdNnXLBueEvNpjcDGcKgK signature: H0aEV4aeqI/2mH5DHGoEFPQWBkRS0bUMR6Q9/yVBGR7xRDH8XNY4u3Wr+mCKX1eXmjaSOIs80ZSIUtFCqQhAhCU=
+	// Output:address: 1Dw6EeFNRZStXTUENRrV9tGUh1rT2hi6YP signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
 }
 
 // ExampleSign_paymail example using Sign()
@@ -172,7 +173,7 @@ func ExampleSign_paymail() {
 		return
 	}
 	fmt.Printf("pubkey: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
-	// Output:pubkey: 031b8c93100d35bd448f4646cc4678f278351b439b52b303ea31ec9edb5475e73f signature: H0aEV4aeqI/2mH5DHGoEFPQWBkRS0bUMR6Q9/yVBGR7xRDH8XNY4u3Wr+mCKX1eXmjaSOIs80ZSIUtFCqQhAhCU=
+	// Output:pubkey: 041b8c93100d35bd448f4646cc4678f278351b439b52b303ea31ec9edb5475e73f36e7ef720509250313fcf1b4c5af0dc7c5efa126efe2c3b7008e6f1487c61f31 signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
 }
 
 // BenchmarkSign benchmarks the method Sign()
@@ -200,13 +201,19 @@ func TestAip_Validate(t *testing.T) {
 			inputAip      *Aip
 			expectedValid bool
 		}{
-			{&Aip{}, false},
 			{&Aip{
 				Algorithm:                 BitcoinECDSA,
-				AlgorithmSigningComponent: "1PASGrpoPtNXYVsWtRn3rR3JoesuZmK1Z5",
-				Data:                      []string{exampleMessage},
-				Signature:                 "IL1f9X5R//+1X+nBf4alcMe+Fom0Dtv5J4R+LBHiDyHYSt6OZqvuX3tTHwZefg/iXu/lsAScd2ekQci+wtbDyic=",
+				AlgorithmSigningComponent: "12SsqqYk43kggMBpSvWHwJwR31NsgMePKS",
+				Data:                      []string{string(txscript.OP_RETURN), exampleMessage},
+				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, true},
+			{&Aip{
+				Algorithm:                 BitcoinECDSA,
+				AlgorithmSigningComponent: "12SsqqYk43kggMBpSvWHwJwR31NsgMePKS",
+				Data:                      []string{"test message"},
+				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
+			}, false},
+			{&Aip{}, false},
 			{&Aip{
 				Algorithm:                 BitcoinECDSA,
 				AlgorithmSigningComponent: "1PASGrpoPtNXYVsWtRn3rR3JoesuZmK1Z5",
@@ -233,15 +240,9 @@ func TestAip_Validate(t *testing.T) {
 			}, false},
 			{&Aip{
 				Algorithm:                 Paymail,
-				AlgorithmSigningComponent: "0233fbdf657a4d0a7a2587fccc4c6ad9a952cfe79d517001a1cc462996c5db13bc",
-				Data:                      []string{exampleMessage},
-				Signature:                 "IMlJxr2jImPKkuh5QQPmyRkNCiwsYC1uKOicBf1j69AZRqUmA3bVGylmNERlXMXtuweVzV3E40OtVckCxDfVhY8=",
-			}, true},
-			{&Aip{
-				Algorithm:                 Paymail,
 				AlgorithmSigningComponent: "0",
-				Data:                      []string{exampleMessage},
-				Signature:                 "IMlJxr2jImPKkuh5QQPmyRkNCiwsYC1uKOicBf1j69AZRqUmA3bVGylmNERlXMXtuweVzV3E40OtVckCxDfVhY8=",
+				Data:                      []string{string(txscript.OP_RETURN), exampleMessage},
+				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, false},
 		}
 	)
@@ -290,7 +291,7 @@ func ExampleAip_Validate() {
 	} else if err != nil {
 		fmt.Printf("signature validation failed: %s", err.Error())
 	}
-	// Output:valid signature: H0aEV4aeqI/2mH5DHGoEFPQWBkRS0bUMR6Q9/yVBGR7xRDH8XNY4u3Wr+mCKX1eXmjaSOIs80ZSIUtFCqQhAhCU=
+	// Output:valid signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
 }
 
 // BenchmarkAip_Validate benchmarks the method Validate()
@@ -321,8 +322,8 @@ func TestSignOpReturnData(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				BitcoinECDSA,
 				[][]byte{[]byte(exampleMessage)},
-				"G2XN+4EZ6kBcJAOE2mMB2kAi3mFZfLmOBJxQPho2uQvYegDLF8wrt+44a4hoiWIys+LaD1H/9A7+v/ihoqdDO6g=",
-				"006a0c74657374206d65737361676522313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f454344534122315041534772706f50744e585956735774526e337252334a6f6573755a6d4b315a354c58494c3166395835522f2f2b31582b6e426634616c634d652b466f6d30447476354a34522b4c424869447948595374364f5a7176755833745448775a6566672f6958752f6c734153636432656b5163692b777462447969633d",
+				"GwJif5FKr6rPpKYghZ7F7Rmaw00q5nWo6NiJOuje+6WBOM6qd8MlVnbWr2mrrA+aaDatHxavR8JTckpSfx1RJ1o=",
+				"006a0c74657374206d65737361676522313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f45434453412131553151733836707847724e55796a37673752346d386b3879346b6d78766f756f4c5847774a696635464b72367250704b5967685a374637526d6177303071356e576f364e694a4f756a652b3657424f4d367164384d6c566e625772326d7272412b61614461744878617652384a54636b7053667831524a316f3d",
 				false,
 				false,
 				false,
@@ -341,8 +342,8 @@ func TestSignOpReturnData(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				Paymail,
 				[][]byte{[]byte(exampleMessage)},
-				"IL1f9X5R//+1X+nBf4alcMe+Fom0Dtv5J4R+LBHiDyHYSt6OZqvuX3tTHwZefg/iXu/lsAScd2ekQci+wtbDyic=",
-				"006a0c74657374206d65737361676522313550636948473232534e4c514a584d6f5355615756693757537163376843667661077061796d61696c423032393933323961333030663333386531363437313735383139616663343564353536613662356665336338343132366636346336663530356165376161393339304c58494c3166395835522f2f2b31582b6e426634616c634d652b466f6d30447476354a34522b4c424869447948595374364f5a7176755833745448775a6566672f6958752f6c734153636432656b5163692b777462447969633d",
+				"GwJif5FKr6rPpKYghZ7F7Rmaw00q5nWo6NiJOuje+6WBOM6qd8MlVnbWr2mrrA+aaDatHxavR8JTckpSfx1RJ1o=",
+				"006a0c74657374206d65737361676522313550636948473232534e4c514a584d6f5355615756693757537163376843667661077061796d61696c4c82303439393332396133303066333338653136343731373538313961666334356435353661366235666533633834313236663634633666353035616537616139333930343261346361633931326335396261663738323534346131626234356632333432613536303334343435656133313233643733393536663731306334333962654c5847774a696635464b72367250704b5967685a374637526d6177303071356e576f364e694a4f756a652b3657424f4d367164384d6c566e625772326d7272412b61614461744878617652384a54636b7053667831524a316f3d",
 				false,
 				false,
 				false,
@@ -380,7 +381,7 @@ func ExampleSignOpReturnData() {
 		return
 	}
 	fmt.Printf("signature: %s output: %s", a.Signature, out.GetLockingScriptHexString())
-	// Output:signature: Hwvwd4vKBvbfcnkqfXTzc0c5JWcbV9nmGz28zh8ds1yHOoMLP7w4aJrErTCg2xO+W8TqiioG0oJKP2a5rk1+lhE= output: 006a13736f6d65206f705f72657475726e206461746122313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f45434453412231446647784b6d674c3345547755644e6e584c42756545764e706a634447634b674b4c58487776776434764b42766266636e6b716658547a633063354a57636256396e6d477a32387a683864733179484f6f4d4c50377734614a72457254436732784f2b5738547169696f47306f4a4b50326135726b312b6c68453d
+	// Output:signature: G7zptA7IbNaa7PQlblH1v5ElaOj3Zo49oiUrDMqfWM4QFNdIKDnXMkxLU1YgrxODd8uFNU279utUCC4MGPp5pjM= output: 006a13736f6d65206f705f72657475726e206461746122313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f454344534122314477364565464e525a5374585455454e52725639744755683172543268693659504c5847377a7074413749624e61613750516c626c48317635456c614f6a335a6f34396f695572444d7166574d3451464e64494b446e584d6b784c5531596772784f44643875464e553237397574554343344d47507035706a4d3d
 }
 
 // BenchmarkSignOpReturnData benchmarks the method SignOpReturnData()

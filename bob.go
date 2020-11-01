@@ -3,7 +3,6 @@ package aip
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -80,7 +79,7 @@ func NewFromTapes(tapes []bob.Tape) (a *Aip) {
 func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 
 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
-	var data = []string{fmt.Sprintf("%d", txscript.OP_RETURN)}
+	var data = []string{string(txscript.OP_RETURN)}
 
 	if len(a.Indices) == 0 {
 

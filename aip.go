@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
+	"github.com/btcsuite/btcd/txscript"
 	"github.com/libsv/libsv/transaction/output"
 )
 
@@ -49,6 +50,11 @@ func (a *Aip) Validate() (bool, error) {
 		return false, errors.New("missing data or signing component")
 	}
 
+	// Check to be sure OP_RETURN was prepended before trying to validate
+	if a.Data[0] != string(txscript.OP_RETURN) {
+		return false, fmt.Errorf("The first item in payload is always OP_RETURN")
+	}
+
 	// Convert pubkey to address
 	if a.Algorithm == Paymail {
 		// Detect whether this key was compressed when sig was made
@@ -65,7 +71,6 @@ func (a *Aip) Validate() (bool, error) {
 		a.AlgorithmSigningComponent = addr.String()
 	}
 
-	fmt.Println("Validating", a.Data)
 	// You get the address associated with the pki instead of the current address
 	err := bitcoin.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, strings.Join(a.Data, ""))
 	return err == nil, err
@@ -98,7 +103,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	case Paymail:
 		// Signing component = paymail identity key
 		// Get pubKey from private key and overload the address field in AIP
-		if a.AlgorithmSigningComponent, err = bitcoin.PubKeyFromPrivateKeyString(privateKey); err != nil {
+		if a.AlgorithmSigningComponent, err = bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
 			return
 		}
 	}

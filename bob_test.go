@@ -64,23 +64,23 @@ func TestNewFromTape(t *testing.T) {
 	)
 
 	// Run tests
-	for _, test := range tests {
+	for idx, test := range tests {
 		if a := NewFromTape(test.inputTapes[test.inputIndex]); a == nil && !test.expectedNil {
-			t.Errorf("%s Failed: [%v] inputted and nil was not expected", t.Name(), test.inputTapes[test.inputIndex])
+			t.Errorf("%d %s Failed: [%v] inputted and nil was not expected", idx, t.Name(), test.inputTapes[test.inputIndex])
 		} else if a != nil && test.expectedNil {
-			t.Errorf("%s Failed: [%v] inputted and nil was expected", t.Name(), test.inputTapes[test.inputIndex])
+			t.Errorf("%d %s Failed: [%v] inputted and nil was expected", idx, t.Name(), test.inputTapes[test.inputIndex])
 		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes[test.inputIndex], test.expectedSignature, a.Signature)
+			t.Errorf("%d %s Failed: [%v] inputted and expected [%s] but got [%s]", idx, t.Name(), test.inputTapes[test.inputIndex], test.expectedSignature, a.Signature)
 		} else if a != nil && a.Algorithm != test.expectedAlgorithm {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes[test.inputIndex], test.expectedAlgorithm, a.Algorithm)
+			t.Errorf("%d %s Failed: [%v] inputted and expected [%s] but got [%s]", idx, t.Name(), test.inputTapes[test.inputIndex], test.expectedAlgorithm, a.Algorithm)
 		} else if a != nil && a.AlgorithmSigningComponent != test.expectedComponent {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes[test.inputIndex], test.expectedComponent, a.AlgorithmSigningComponent)
+			t.Errorf("%d %s Failed: [%v] inputted and expected [%s] but got [%s]", idx, t.Name(), test.inputTapes[test.inputIndex], test.expectedComponent, a.AlgorithmSigningComponent)
 		} else if a != nil && len(test.inputTapes) > 1 {
 			valid, err := ValidateTapes(test.inputTapes)
 			if valid && !test.expectedValidation {
-				t.Errorf("%s Failed: [%v] inputted and validation should have failed", t.Name(), test.inputTapes)
+				t.Errorf("%d %s Failed: [%v] inputted and validation should have failed", idx, t.Name(), test.inputTapes)
 			} else if !valid && test.expectedValidation && err != nil {
-				t.Errorf("%s Failed: [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputTapes, err.Error())
+				t.Errorf("%d %s Failed: [%v] inputted and validation should have passed, error: %s", idx, t.Name(), test.inputTapes, err.Error())
 			}
 		}
 	}
@@ -263,11 +263,11 @@ func TestValidateTapes(t *testing.T) {
 	)
 
 	// Run tests
-	for _, test := range tests {
+	for idx, test := range tests {
 		if valid, err := ValidateTapes(test.inputTapes); valid && !test.expectedValidation {
-			t.Errorf("%s Failed: [%v] inputted and validation should have failed", t.Name(), test.inputTapes)
+			t.Errorf("%d %s Failed: inputted and validation should have failed", idx, t.Name())
 		} else if !valid && test.expectedValidation && err != nil {
-			t.Errorf("%s Failed: [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputTapes, err.Error())
+			t.Errorf("%d %s Failed: inputted and validation should have passed, error: %s", idx, t.Name(), err.Error())
 		}
 	}
 }
@@ -334,7 +334,7 @@ func TestSignBobOpReturnData(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				BitcoinECDSA,
 				getBobOutput(),
-				"H2Nn2dLDOO86cnblfLEAWsNMGokR8fglDu7boPC7bVslEX0EOc/W66yso2MRdHd/RZD0NiQJ6JEtk9H4EgSssBo=",
+				"G/tmf2aRfTqri7pCF793/xDZO2COIzcY2BRpb5P0o+zGIG0tCF3JJLadQwCCC+Lu+Xcanv+Fl82lrk3hVlo8bXY=",
 				false,
 				false,
 				false,
@@ -354,7 +354,7 @@ func TestSignBobOpReturnData(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				Paymail,
 				getBobOutput(),
-				"H2Nn2dLDOO86cnblfLEAWsNMGokR8fglDu7boPC7bVslEX0EOc/W66yso2MRdHd/RZD0NiQJ6JEtk9H4EgSssBo=",
+				"G/tmf2aRfTqri7pCF793/xDZO2COIzcY2BRpb5P0o+zGIG0tCF3JJLadQwCCC+Lu+Xcanv+Fl82lrk3hVlo8bXY=",
 				false,
 				false,
 				false,
@@ -398,7 +398,7 @@ func ExampleSignBobOpReturnData() {
 		return
 	}
 	fmt.Printf("signature: %s", a.Signature)
-	// Output:signature: H2C5brtzppiz3zXe0W8klUeG99ox2sOY6nmXKBOPdkUrURVE0O37JXsjkGV8m9ZCPEAPzCrS2GrWMQrcHFBdFCA=
+	// Output:signature: G1oBzIBhluBmdu2U6xfb75ACIPpDVmjCV4OV1hVAlnovG1IN3jyIOYK/HJQuH5UOjf2rfaI45SZqPxx9llN+Mgs=
 }
 
 // BenchmarkSignBobOpReturnData benchmarks the method SignBobOpReturnData()
