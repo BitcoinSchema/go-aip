@@ -3,10 +3,12 @@ package aip
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/bitcoinschema/go-bob"
+	"github.com/btcsuite/btcd/txscript"
 )
 
 // NewFromTape will create a new AIP object from a bob.Tape
@@ -77,7 +79,8 @@ func NewFromTapes(tapes []bob.Tape) (a *Aip) {
 // SetDataFromTapes sets the data the AIP signature is signing
 func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 
-	var data = []string{"j"}
+	// Set OP_RETURN to be consistent with BitcoinFiles SDK
+	var data = []string{fmt.Sprintf("%d", txscript.OP_RETURN)}
 
 	if len(a.Indices) == 0 {
 

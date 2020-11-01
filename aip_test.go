@@ -26,10 +26,10 @@ func TestSign(t *testing.T) {
 			expectedError     bool
 		}{
 			{
-				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
+				"0499f8239bfe10eb0f5e53d543635a423c96529dd85fa4bad42049a0b435ebdd",
 				BitcoinECDSA,
 				exampleMessage,
-				"IL1f9X5R//+1X+nBf4alcMe+Fom0Dtv5J4R+LBHiDyHYSt6OZqvuX3tTHwZefg/iXu/lsAScd2ekQci+wtbDyic=",
+				"HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 				false,
 				false,
 			},
@@ -133,21 +133,21 @@ func TestSign(t *testing.T) {
 	)
 
 	// Run tests
-	for _, test := range tests {
+	for testNo, test := range tests {
 		if a, err := Sign(test.inputPrivateKey, test.inputAlgorithm, test.inputMessage); err != nil && !test.expectedError {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and error not expected but got: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
+			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and error not expected but got: %s", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
 		} else if err == nil && test.expectedError {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and error was expected", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
 		} else if a == nil && !test.expectedNil {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and nil was not expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and nil was not expected (aip)", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
 		} else if a != nil && test.expectedNil {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and nil was expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and nil was expected (aip)", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
 		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%s Failed: [%s] [%s] [%s] inputted and expected [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, test.expectedSignature, a.Signature)
+			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and expected [%s] but got [%s]", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, test.expectedSignature, a.Signature)
 		} else if a != nil && err == nil {
-			// Test validation
+			// Test validation - THIS WILL NOT WORK BECAUSE DATA IS NOT SET
 			if _, err = a.Validate(); err != nil {
-				t.Errorf("%s Failed: [%s] [%s] [%s] inputted and validation failed: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
+				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and validation failed: %s", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
 			}
 		}
 	}
@@ -301,7 +301,7 @@ func BenchmarkAip_Validate(b *testing.B) {
 	}
 }
 
-// TestSignOpReturnData tests for nil case in SignOpReturnData()
+// TestSignOpReturnData tests for nil case in SignOpReturnData(), takes data including the OP_RETURN byte
 func TestSignOpReturnData(t *testing.T) {
 	t.Parallel()
 
@@ -321,7 +321,7 @@ func TestSignOpReturnData(t *testing.T) {
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				BitcoinECDSA,
 				[][]byte{[]byte(exampleMessage)},
-				"IL1f9X5R//+1X+nBf4alcMe+Fom0Dtv5J4R+LBHiDyHYSt6OZqvuX3tTHwZefg/iXu/lsAScd2ekQci+wtbDyic=",
+				"G2XN+4EZ6kBcJAOE2mMB2kAi3mFZfLmOBJxQPho2uQvYegDLF8wrt+44a4hoiWIys+LaD1H/9A7+v/ihoqdDO6g=",
 				"006a0c74657374206d65737361676522313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f454344534122315041534772706f50744e585956735774526e337252334a6f6573755a6d4b315a354c58494c3166395835522f2f2b31582b6e426634616c634d652b466f6d30447476354a34522b4c424869447948595374364f5a7176755833745448775a6566672f6958752f6c734153636432656b5163692b777462447969633d",
 				false,
 				false,
@@ -351,23 +351,23 @@ func TestSignOpReturnData(t *testing.T) {
 	)
 
 	// Run tests
-	for _, test := range tests {
+	for idx, test := range tests {
 		if out, _, a, err := SignOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
 		} else if err == nil && test.expectedError {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error was expected", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a == nil && !test.expectedAipNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a != nil && test.expectedAipNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if out == nil && !test.expectedOutNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if out != nil && test.expectedOutNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
 		} else if out != nil && out.GetLockingScriptHexString() != test.expectedOutput {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and expected output [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedOutput, out.GetLockingScriptHexString())
+			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected output [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedOutput, out.GetLockingScriptHexString())
 		}
 	}
 }

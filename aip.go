@@ -9,6 +9,8 @@ package aip
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"log"
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
@@ -41,6 +43,7 @@ type Aip struct {
 // Validate returns true if the given AIP signature is valid for given data
 func (a *Aip) Validate() (bool, error) {
 
+	log.Println("Validating", a.AlgorithmSigningComponent)
 	// Both data and component are required
 	if len(a.Data) == 0 || len(a.AlgorithmSigningComponent) == 0 {
 		return false, errors.New("missing data or signing component")
@@ -48,29 +51,39 @@ func (a *Aip) Validate() (bool, error) {
 
 	// Convert pubkey to address
 	if a.Algorithm == Paymail {
+		// Detect whether this key was compressed when sig was made
+		_, wasCompressed, err := bitcoin.PubKeyFromSignature(a.Signature, strings.Join(a.Data, ""))
+		if err != nil {
+			return false, err
+		}
 
 		// Get the public address for this paymail from pki
-		addr, err := bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent)
+		addr, err := bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent, wasCompressed)
 		if err != nil {
 			return false, err
 		}
 		a.AlgorithmSigningComponent = addr.String()
 	}
 
+	fmt.Println("Validating", a.Data)
 	// You get the address associated with the pki instead of the current address
 	err := bitcoin.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, strings.Join(a.Data, ""))
 	return err == nil, err
 }
 
 // Sign will provide an AIP signature for a given private key and message using
-// the provided algorithm
+// the provided algorithm. It prepends an OP_RETURN to the payload
 func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err error) {
 
+	// Prepend the OP_RETURN to keep consistent with BitcoinFiles SDK
+	// data = append(data, []byte{byte(txscript.OP_RETURN)})
+	prependedData := []string{"j", message}
+
 	// Create the base AIP object
-	a = &Aip{Algorithm: algorithm, Data: []string{message}}
+	a = &Aip{Algorithm: algorithm, Data: prependedData}
 
 	// Sign using the private key and the message
-	if a.Signature, err = bitcoin.SignMessage(privateKey, message); err != nil {
+	if a.Signature, err = bitcoin.SignMessage(privateKey, strings.Join(prependedData, "")); err != nil {
 		return
 	}
 
@@ -79,7 +92,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	case BitcoinECDSA, BitcoinSignedMessage:
 		// Signing component = bitcoin address
 		// Get the address of the private key
-		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKey(privateKey); err != nil {
+		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKey(privateKey, false); err != nil {
 			return
 		}
 	case Paymail:
