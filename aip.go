@@ -21,6 +21,7 @@ import (
 // Prefix is the Bitcom prefix used by AIP
 const Prefix = "15PciHG22SNLQJXMoSUaWVi7WSqc7hCfva"
 const pipe = "|"
+const opReturn = string(rune(txscript.OP_RETURN)) // creates: j
 
 // Algorithm is an enum for the different possible signature algorithms
 type Algorithm string
@@ -50,8 +51,8 @@ func (a *Aip) Validate() (bool, error) {
 	}
 
 	// Check to be sure OP_RETURN was prepended before trying to validate
-	if a.Data[0] != fmt.Sprintf("%d", txscript.OP_RETURN) {
-		return false, fmt.Errorf("the first item in payload is always OP_RETURN")
+	if a.Data[0] != opReturn {
+		return false, fmt.Errorf("the first item in payload is always OP_RETURN, got: %s", a.Data[0])
 	}
 
 	// Convert pubkey to address
@@ -81,7 +82,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 
 	// Prepend the OP_RETURN to keep consistent with BitcoinFiles SDK
 	// data = append(data, []byte{byte(txscript.OP_RETURN)})
-	prependedData := []string{"j", message}
+	prependedData := []string{opReturn, message}
 
 	// Create the base AIP object
 	a = &Aip{Algorithm: algorithm, Data: prependedData}

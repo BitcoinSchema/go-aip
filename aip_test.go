@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/bitcoinschema/go-bob"
-	"github.com/btcsuite/btcd/txscript"
 )
 
 const examplePrivateKey = "54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd"
@@ -204,7 +203,7 @@ func TestAip_Validate(t *testing.T) {
 			{&Aip{
 				Algorithm:                 BitcoinECDSA,
 				AlgorithmSigningComponent: "12SsqqYk43kggMBpSvWHwJwR31NsgMePKS",
-				Data:                      []string{fmt.Sprintf("%d", txscript.OP_RETURN), exampleMessage},
+				Data:                      []string{opReturn, exampleMessage},
 				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, true},
 			{&Aip{
@@ -241,7 +240,7 @@ func TestAip_Validate(t *testing.T) {
 			{&Aip{
 				Algorithm:                 Paymail,
 				AlgorithmSigningComponent: "0",
-				Data:                      []string{fmt.Sprintf("%x", txscript.OP_RETURN), exampleMessage},
+				Data:                      []string{opReturn, exampleMessage},
 				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, false},
 		}
