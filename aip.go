@@ -10,10 +10,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
+	"github.com/bitcoinsv/bsvutil"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/libsv/libsv/transaction/output"
 )
@@ -21,6 +21,7 @@ import (
 // Prefix is the Bitcom prefix used by AIP
 const Prefix = "15PciHG22SNLQJXMoSUaWVi7WSqc7hCfva"
 const pipe = "|"
+const opReturn = string(rune(txscript.OP_RETURN)) // creates: j
 
 // Algorithm is an enum for the different possible signature algorithms
 type Algorithm string
@@ -44,15 +45,14 @@ type Aip struct {
 // Validate returns true if the given AIP signature is valid for given data
 func (a *Aip) Validate() (bool, error) {
 
-	log.Println("Validating", a.AlgorithmSigningComponent)
 	// Both data and component are required
 	if len(a.Data) == 0 || len(a.AlgorithmSigningComponent) == 0 {
 		return false, errors.New("missing data or signing component")
 	}
 
 	// Check to be sure OP_RETURN was prepended before trying to validate
-	if a.Data[0] != string(txscript.OP_RETURN) {
-		return false, fmt.Errorf("The first item in payload is always OP_RETURN")
+	if a.Data[0] != opReturn {
+		return false, fmt.Errorf("the first item in payload is always OP_RETURN, got: %s", a.Data[0])
 	}
 
 	// Convert pubkey to address
@@ -64,8 +64,8 @@ func (a *Aip) Validate() (bool, error) {
 		}
 
 		// Get the public address for this paymail from pki
-		addr, err := bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent, wasCompressed)
-		if err != nil {
+		var addr *bsvutil.LegacyAddressPubKeyHash
+		if addr, err = bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent, wasCompressed); err != nil {
 			return false, err
 		}
 		a.AlgorithmSigningComponent = addr.String()
@@ -82,7 +82,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 
 	// Prepend the OP_RETURN to keep consistent with BitcoinFiles SDK
 	// data = append(data, []byte{byte(txscript.OP_RETURN)})
-	prependedData := []string{"j", message}
+	prependedData := []string{opReturn, message}
 
 	// Create the base AIP object
 	a = &Aip{Algorithm: algorithm, Data: prependedData}
