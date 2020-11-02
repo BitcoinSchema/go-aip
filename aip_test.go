@@ -204,7 +204,7 @@ func TestAip_Validate(t *testing.T) {
 			{&Aip{
 				Algorithm:                 BitcoinECDSA,
 				AlgorithmSigningComponent: "12SsqqYk43kggMBpSvWHwJwR31NsgMePKS",
-				Data:                      []string{string(txscript.OP_RETURN), exampleMessage},
+				Data:                      []string{fmt.Sprintf("%d", txscript.OP_RETURN), exampleMessage},
 				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, true},
 			{&Aip{
@@ -241,7 +241,7 @@ func TestAip_Validate(t *testing.T) {
 			{&Aip{
 				Algorithm:                 Paymail,
 				AlgorithmSigningComponent: "0",
-				Data:                      []string{string(txscript.OP_RETURN), exampleMessage},
+				Data:                      []string{fmt.Sprintf("%x", txscript.OP_RETURN), exampleMessage},
 				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, false},
 		}
