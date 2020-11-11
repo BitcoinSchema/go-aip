@@ -97,13 +97,13 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	case BitcoinECDSA, BitcoinSignedMessage:
 		// Signing component = bitcoin address
 		// Get the address of the private key
-		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKey(privateKey, false); err != nil {
+		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKeyString(privateKey, false); err != nil {
 			return
 		}
 	case Paymail:
 		// Signing component = paymail identity key
 		// Get pubKey from private key and overload the address field in AIP
-		if a.AlgorithmSigningComponent, err = bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
+		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKeyString(privateKey, false); err != nil {
 			return
 		}
 	}
