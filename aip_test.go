@@ -171,8 +171,8 @@ func ExampleSign_paymail() {
 		fmt.Printf("error occurred: %s", err.Error())
 		return
 	}
-	fmt.Printf("pubkey: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
-	// Output:pubkey: 041b8c93100d35bd448f4646cc4678f278351b439b52b303ea31ec9edb5475e73f36e7ef720509250313fcf1b4c5af0dc7c5efa126efe2c3b7008e6f1487c61f31 signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
+	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
+	// Output:address: 1Dw6EeFNRZStXTUENRrV9tGUh1rT2hi6YP signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
 }
 
 // BenchmarkSign benchmarks the method Sign()
