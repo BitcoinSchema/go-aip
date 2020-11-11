@@ -241,7 +241,7 @@ func TestAip_Validate(t *testing.T) {
 			{&Aip{
 				Algorithm:                 Paymail,
 				AlgorithmSigningComponent: "0",
-				Data:                      []string{string(txscript.OP_RETURN), exampleMessage},
+				Data:                      []string{string(rune(txscript.OP_RETURN)), exampleMessage},
 				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, false},
 		}
