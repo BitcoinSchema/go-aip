@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/bitcoinschema/go-bob"
-	"github.com/btcsuite/btcd/txscript"
 )
 
 // NewFromTape will create a new AIP object from a bob.Tape
@@ -79,7 +78,7 @@ func NewFromTapes(tapes []bob.Tape) (a *Aip) {
 func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 
 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
-	var data = []string{string(txscript.OP_RETURN)}
+	var data = []string{opReturn}
 
 	if len(a.Indices) == 0 {
 

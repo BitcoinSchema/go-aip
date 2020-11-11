@@ -172,8 +172,8 @@ func ExampleSign_paymail() {
 		fmt.Printf("error occurred: %s", err.Error())
 		return
 	}
-	fmt.Printf("pubkey: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
-	// Output:pubkey: 041b8c93100d35bd448f4646cc4678f278351b439b52b303ea31ec9edb5475e73f36e7ef720509250313fcf1b4c5af0dc7c5efa126efe2c3b7008e6f1487c61f31 signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
+	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
+	// Output:address: 041b8c93100d35bd448f4646cc4678f278351b439b52b303ea31ec9edb5475e73f36e7ef720509250313fcf1b4c5af0dc7c5efa126efe2c3b7008e6f1487c61f31 signature: HNQwm/7FV7S5wzDf4L+HayG8PVhenwgeZ0T5QuNnVGbtSe+7L+Um7lxcrjsj7eMi3N4K1dAOqrVbkESkQfV7odc=
 }
 
 // BenchmarkSign benchmarks the method Sign()
@@ -204,7 +204,7 @@ func TestAip_Validate(t *testing.T) {
 			{&Aip{
 				Algorithm:                 BitcoinECDSA,
 				AlgorithmSigningComponent: "12SsqqYk43kggMBpSvWHwJwR31NsgMePKS",
-				Data:                      []string{string(txscript.OP_RETURN), exampleMessage},
+				Data:                      []string{opReturn, exampleMessage},
 				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
 			}, true},
 			{&Aip{
@@ -368,6 +368,7 @@ func TestSignOpReturnData(t *testing.T) {
 		} else if a != nil && a.Signature != test.expectedSignature {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
 		} else if out != nil && out.GetLockingScriptHexString() != test.expectedOutput {
+			t.Logf("out %s", out.String())
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected output [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedOutput, out.GetLockingScriptHexString())
 		}
 	}
