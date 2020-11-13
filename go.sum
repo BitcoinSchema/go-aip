@@ -1,10 +1,8 @@
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=
-github.com/bitcoinschema/go-bitcoin v0.2.26 h1:Q4peTwqsAV9uA7Y8jGGuKSnjZMLV7Daa5bLf1pf0VVY=
-github.com/bitcoinschema/go-bitcoin v0.2.26/go.mod h1:j7Fw/tNdIM6+IIWhUldgYRXTWPOROhs/rAspvluuaNA=
 github.com/bitcoinschema/go-bitcoin v0.2.30 h1:T+kVO6np+pbObqeNL+rhhKkzw5UOz2gHmSEXnO3VABU=
 github.com/bitcoinschema/go-bitcoin v0.2.30/go.mod h1:j7Fw/tNdIM6+IIWhUldgYRXTWPOROhs/rAspvluuaNA=
-github.com/bitcoinschema/go-bob v0.0.14 h1:EK84n5cRMOCGIxiHDy0/yGFxw8g2pDyJgLjTTKh8Dy0=
-github.com/bitcoinschema/go-bob v0.0.14/go.mod h1:8iV+2N7t/vPV+axJzA661ZI1to+Whw/M71tJIkA0uC0=
+github.com/bitcoinschema/go-bob v0.0.15 h1:Oqzwr9QoefDAxaal/uq7bYO7qdY4ZiAt//L1qhboAJA=
+github.com/bitcoinschema/go-bob v0.0.15/go.mod h1:VvjgpZ2QUhcdfVCIKzc9ti4qQHgYUDfbrN5NPba1TLs=
 github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173 h1:2yTIV9u7H0BhRDGXH5xrAwAz7XibWJtX2dNezMeNsUo=
 github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173/go.mod h1:BZ1UcC9+tmcDEcdVXgpt13hMczwJxWzpAn68wNs7zRA=
 github.com/bitcoinsv/bsvlog v0.0.0-20181216181007-cb81b076bf2e h1:6f+gRvaPE/4h0g39dqTNPr9/P4mikw0aB+dhiExaWN8=
