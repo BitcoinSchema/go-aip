@@ -4,8 +4,10 @@ github.com/bitcoin-sv/merchantapi-reference v1.1.0 h1:H8vUBMjzdm6eAJI+1bk7CA2DXw
 github.com/bitcoin-sv/merchantapi-reference v1.1.0/go.mod h1:unZHsjGH7ChT0p5b5BSEBfZeo4E+eU+plMul2zYInJU=
 github.com/bitcoinschema/go-bitcoin v0.3.1 h1:usTzIxt+PJU6NeSU37Ie6OU5yJubIOHlSffbhZaOpMQ=
 github.com/bitcoinschema/go-bitcoin v0.3.1/go.mod h1:4NMNTzVCGeiIYObG67F06qMI86DFFaGusY1SGjitvm0=
-github.com/bitcoinschema/go-bob v0.1.0 h1:8U0AkqO43lC8L5gw9wjtPs7P3qXSScW/JcatE0J9v8Y=
-github.com/bitcoinschema/go-bob v0.1.0/go.mod h1:7MVdJidmZNYrRdVgduybnlkFSKeAIjefl6s7JiOzdq0=
+github.com/bitcoinschema/go-bitcoin v0.3.2 h1:q0XKzR/9CoLLYEgfbtpPhwvz1xek7OWXFNwluxusRSU=
+github.com/bitcoinschema/go-bitcoin v0.3.2/go.mod h1:+lyQ6v2RiaX+ZyqAEZSg1Wzst4FtxTh66DWDP3S1fNQ=
+github.com/bitcoinschema/go-bob v0.1.1 h1:ZojtWB5nfRiUottlDwF960/FlsojC/UCGiDD+APXWfA=
+github.com/bitcoinschema/go-bob v0.1.1/go.mod h1:JzAaJUUQQvNJoybMypN+isXVpYffPVC65MGXWEq7JLY=
 github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173 h1:2yTIV9u7H0BhRDGXH5xrAwAz7XibWJtX2dNezMeNsUo=
 github.com/bitcoinsv/bsvd v0.0.0-20190609155523-4c29707f7173/go.mod h1:BZ1UcC9+tmcDEcdVXgpt13hMczwJxWzpAn68wNs7zRA=
 github.com/bitcoinsv/bsvlog v0.0.0-20181216181007-cb81b076bf2e h1:6f+gRvaPE/4h0g39dqTNPr9/P4mikw0aB+dhiExaWN8=
@@ -46,8 +48,8 @@ github.com/jrick/logrotate v1.0.0/go.mod h1:LNinyqDIJnpAur+b8yyulnQw/wDuN1+BYKlT
 github.com/kkdai/bstream v0.0.0-20161212061736-f391b8402d23/go.mod h1:J+Gs4SYgM6CZQHDETBtE9HaSEkGmuNXF86RwHhHUvq4=
 github.com/libsv/go-bt v0.0.1 h1:kMRGGzHNvb70TrSgoLbkMlRBuGuW3xXeqE4BaepPlTw=
 github.com/libsv/go-bt v0.0.1/go.mod h1:yo8F8kZaQnZ4GN7txXNs1ANGKLGjTyrHoNVu6ig3acA=
-github.com/libsv/go-bt v0.0.2 h1:sCg849eZZIurDee7dnyb0KNjHZOFY/OCOFc22OKN5pg=
-github.com/libsv/go-bt v0.0.2/go.mod h1:HQbko29x4BEFq5OYe1u21DeHiiNTK1CdZUy3Fv7+rc0=
+github.com/libsv/go-bt v0.0.3 h1:wuyubNlVQ8bay9jJy5JpolvMxoiwSA/u5y+zMnVrDIE=
+github.com/libsv/go-bt v0.0.3/go.mod h1:6/eqZS8F56KztrcUdoYXHFx8ZBr4cg5Hp0jf0cG73J4=
 github.com/libsv/libsv v0.0.11 h1:tb2w/RFpsZLEfPNDGl4tlwk3haMSXYXKspta16+nyv4=
 github.com/libsv/libsv v0.0.11/go.mod h1:jhXD2sLtYUNMWoD9mWmsQN0hoGZUK1wCvindT1Odijo=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
@@ -74,6 +76,8 @@ golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 h1:pLI5jrR7OSLijeIDcmRxNm
 golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 h1:umElSU9WZirRdgu2yFHY0ayQkEnKiOC1TtM3fWXFnoU=
 golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
+golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 h1:phUcVbl53swtrUN8kQEXFhUxPlIlWyBfKmidCu7P95o=
+golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9/go.mod h1:jdWPYTVW3xRLrWPugEBEK3UY2ZEsg3UU495nc5E+M+I=
 golang.org/x/net v0.0.0-20180719180050-a680a1efc54d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180906233101-161cd47e91fd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
@@ -83,6 +87,8 @@ golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sys v0.0.0-20180909124046-d0be0721c37e/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
