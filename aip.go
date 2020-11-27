@@ -88,7 +88,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	a = &Aip{Algorithm: algorithm, Data: prependedData}
 
 	// Sign using the private key and the message
-	if a.Signature, err = bitcoin.SignMessage(privateKey, strings.Join(prependedData, "")); err != nil {
+	if a.Signature, err = bitcoin.SignMessage(privateKey, strings.Join(prependedData, ""), false); err != nil {
 		return
 	}
 
