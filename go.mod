@@ -8,4 +8,5 @@ require (
 	github.com/bitcoinsv/bsvutil v0.0.0-20181216182056-1d77cf353ea9
 	github.com/btcsuite/btcd v0.21.0-beta
 	github.com/libsv/go-bt v0.0.5
+	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // indirect
 )
