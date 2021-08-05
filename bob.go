@@ -17,7 +17,7 @@ func NewFromTape(tape bob.Tape) (a *Aip) {
 	return
 }
 
-// FromTape takes a BOB Tape and returns a Aip data structure.
+// FromTape takes a BOB Tape and returns an Aip data structure.
 // Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
 func (a *Aip) FromTape(tape bob.Tape) {
 
