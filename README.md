@@ -2,12 +2,12 @@
 > Library for working with [Author Identity Protocol](https://github.com/BitcoinFiles/AUTHOR_IDENTITY_PROTOCOL) in Go
 
 [![Release](https://img.shields.io/github/release-pre/BitcoinSchema/go-aip.svg?logo=github&style=flat&v=3)](https://github.com/BitcoinSchema/go-aip/releases)
-[![Build Status](https://img.shields.io/github/workflow/status/BitcoinSchema/go-aip/run-go-tests?logo=github&v=3)](https://github.com/BitcoinSchema/go-aip/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/BitcoinSchema/go-aip/run-tests.yml?branch=master&logo=github&v=3)](https://github.com/BitcoinSchema/go-aip/actions)
 [![Report](https://goreportcard.com/badge/github.com/BitcoinSchema/go-aip?style=flat&v=3)](https://goreportcard.com/report/github.com/BitcoinSchema/go-aip)
 [![codecov](https://codecov.io/gh/BitcoinSchema/go-aip/branch/master/graph/badge.svg?v=3)](https://codecov.io/gh/BitcoinSchema/go-aip)
 [![Go](https://img.shields.io/github/go-mod/go-version/BitcoinSchema/go-aip?v=3)](https://golang.org/)
 <br>
-[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/BitcoinSchema/go-aip&style=flat&v=3)](https://mergify.io)
+[![Mergify Status](https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/BitcoinSchema/go-aip&style=flat&v=3)](https://mergify.io)
 [![Sponsor](https://img.shields.io/badge/sponsor-BitcoinSchema-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/BitcoinSchema)
 [![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat&v=3)](https://gobitcoinsv.com/#sponsor?utm_source=github&utm_medium=sponsor-link&utm_campaign=go-aip&utm_term=go-aip&utm_content=go-aip)
 
