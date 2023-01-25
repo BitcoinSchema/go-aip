@@ -8,6 +8,7 @@ package aip
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -19,7 +20,10 @@ import (
 )
 
 // Prefix is the Bitcom prefix used by AIP
-const Prefix = "15PciHG22SNLQJXMoSUaWVi7WSqc7hCfva"
+var Prefix = "15PciHG22SNLQJXMoSUaWVi7WSqc7hCfva"
+
+var hexPrefix = hex.EncodeToString([]byte(Prefix))
+
 const pipe = "|"
 const opReturn = string(rune(txscript.OP_RETURN)) // creates: j
 

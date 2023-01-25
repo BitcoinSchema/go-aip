@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitcoinschema/go-bitcoin"
 	"github.com/bitcoinschema/go-bob"
+	"github.com/bitcoinschema/go-bpu"
 )
 
 // TestNewFromTape will test the method NewFromTape()
@@ -25,7 +26,7 @@ func TestNewFromTape(t *testing.T) {
 	var (
 		// Testing private methods
 		tests = []struct {
-			inputTapes         []bob.Tape
+			inputTapes         []bpu.Tape
 			inputIndex         int
 			expectedSignature  string
 			expectedAlgorithm  Algorithm
@@ -52,7 +53,7 @@ func TestNewFromTape(t *testing.T) {
 				false,
 			},
 			{
-				[]bob.Tape{*new(bob.Tape)},
+				[]bpu.Tape{*new(bpu.Tape)},
 				0,
 				"",
 				"",
@@ -127,7 +128,7 @@ func TestNewFromTapes(t *testing.T) {
 	var (
 		// Testing private methods
 		tests = []struct {
-			inputTapes         []bob.Tape
+			inputTapes         []bpu.Tape
 			expectedSignature  string
 			expectedAlgorithm  Algorithm
 			expectedComponent  string
@@ -160,7 +161,7 @@ func TestNewFromTapes(t *testing.T) {
 				false,
 			},
 			{
-				[]bob.Tape{*new(bob.Tape)},
+				[]bpu.Tape{*new(bpu.Tape)},
 				"",
 				"",
 				"",
@@ -244,7 +245,7 @@ func TestValidateTapes(t *testing.T) {
 	var (
 		// Testing private methods
 		tests = []struct {
-			inputTapes         []bob.Tape
+			inputTapes         []bpu.Tape
 			expectedValidation bool
 		}{
 			{
@@ -256,7 +257,7 @@ func TestValidateTapes(t *testing.T) {
 				false,
 			},
 			{
-				[]bob.Tape{*new(bob.Tape)},
+				[]bpu.Tape{*new(bpu.Tape)},
 				false,
 			},
 		}
@@ -299,7 +300,7 @@ func BenchmarkValidateTapes(b *testing.B) {
 }
 
 // getBobOutput helper to get op_return in BOB format
-func getBobOutput() bob.Output {
+func getBobOutput() bpu.Output {
 
 	// Create op_return
 	opReturn := bitcoin.OpReturnData{[]byte("prefix1"), []byte("example data"), []byte{0x13, 0x37}}
@@ -323,7 +324,7 @@ func TestSignBobOpReturnData(t *testing.T) {
 		tests = []struct {
 			inputPrivateKey    string
 			inputAlgorithm     Algorithm
-			inputData          bob.Output
+			inputData          bpu.Output
 			expectedSignature  string
 			expectedAipNil     bool
 			expectedOutNil     bool

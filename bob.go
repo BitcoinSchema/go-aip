@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bitcoinschema/go-bob"
+	"github.com/bitcoinschema/go-bpu"
 )
 
 // NewFromTape will create a new AIP object from a bob.Tape
 // Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
-func NewFromTape(tape bob.Tape) (a *Aip) {
+func NewFromTape(tape bpu.Tape) (a *Aip) {
 	a = new(Aip)
 	a.FromTape(tape)
 	return
@@ -19,7 +19,7 @@ func NewFromTape(tape bob.Tape) (a *Aip) {
 
 // FromTape takes a BOB Tape and returns an Aip data structure.
 // Using the FromTape() alone will prevent validation (data is needed via SetData to enable)
-func (a *Aip) FromTape(tape bob.Tape) {
+func (a *Aip) FromTape(tape bpu.Tape) {
 
 	// Not a valid tape?
 	if len(tape.Cell) < 4 {
@@ -29,16 +29,16 @@ func (a *Aip) FromTape(tape bob.Tape) {
 	// Loop to find start of AIP
 	var startIndex int
 	for i, cell := range tape.Cell {
-		if cell.S == Prefix {
+		if *cell.S == Prefix {
 			startIndex = i
 			break
 		}
 	}
 
 	// Set the AIP fields
-	a.Algorithm = Algorithm(tape.Cell[startIndex+1].S)
-	a.AlgorithmSigningComponent = tape.Cell[startIndex+2].S
-	a.Signature = tape.Cell[startIndex+3].B
+	a.Algorithm = Algorithm(*tape.Cell[startIndex+1].S)
+	a.AlgorithmSigningComponent = *tape.Cell[startIndex+2].S
+	a.Signature = *tape.Cell[startIndex+3].B
 
 	// Final index count
 	finalIndexCount := startIndex + 4
@@ -50,7 +50,7 @@ func (a *Aip) FromTape(tape bob.Tape) {
 		// Loop over remaining indices if they exist and append to indices slice
 		a.Indices = make([]int, len(tape.Cell)-finalIndexCount)
 		for x := finalIndexCount - 1; x < len(tape.Cell); x++ {
-			if index, err := strconv.Atoi(tape.Cell[x].S); err == nil {
+			if index, err := strconv.Atoi(*tape.Cell[x].S); err == nil {
 				a.Indices = append(a.Indices, index)
 			}
 		}
@@ -59,11 +59,11 @@ func (a *Aip) FromTape(tape bob.Tape) {
 
 // NewFromTapes will create a new AIP object from a []bob.Tape
 // Using the FromTapes() alone will prevent validation (data is needed via SetData to enable)
-func NewFromTapes(tapes []bob.Tape) (a *Aip) {
+func NewFromTapes(tapes []bpu.Tape) (a *Aip) {
 	// Loop tapes -> cells (only supporting 1 sig right now)
 	for _, t := range tapes {
 		for _, cell := range t.Cell {
-			if cell.S == Prefix {
+			if cell.S != nil && *cell.S == Prefix {
 				a = new(Aip)
 				a.FromTape(t)
 				a.SetDataFromTapes(tapes)
@@ -75,7 +75,7 @@ func NewFromTapes(tapes []bob.Tape) (a *Aip) {
 }
 
 // SetDataFromTapes sets the data the AIP signature is signing
-func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
+func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 
 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
 	var data = []string{opReturn}
@@ -85,12 +85,12 @@ func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
 		for _, tape := range tapes {
 			for _, cell := range tape.Cell {
-				if cell.S != Prefix {
+				if cell.S != nil && *cell.S != Prefix {
 					// Skip the OPS
-					if cell.Ops != "" {
+					if cell.Ops != nil {
 						continue
 					}
-					data = append(data, strings.TrimSpace(cell.S))
+					data = append(data, strings.TrimSpace(*cell.S))
 				} else {
 					data = append(data, pipe)
 					a.Data = data
@@ -105,8 +105,8 @@ func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 
 		for _, tape := range tapes {
 			for _, cell := range tape.Cell {
-				if cell.S != Prefix && contains(a.Indices, indexCt) {
-					data = append(data, cell.S)
+				if *cell.S != Prefix && contains(a.Indices, indexCt) {
+					data = append(data, *cell.S)
 				} else {
 					data = append(data, pipe)
 				}
@@ -120,18 +120,20 @@ func (a *Aip) SetDataFromTapes(tapes []bob.Tape) {
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
 // protocol separator followed by AIP information
-func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Output) (*bob.Output, *Aip, error) {
+func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bpu.Output) (*bpu.Output, *Aip, error) {
 
 	// Parse the data to sign
 	var dataToSign []string
 	for _, tape := range output.Tape {
 		for _, cell := range tape.Cell {
-			if len(cell.S) > 0 {
-				dataToSign = append(dataToSign, cell.S)
+			if cell.S != nil {
+				dataToSign = append(dataToSign, *cell.S)
 			} else {
 				// TODO: Review this case. Should we assume the b64 is signed?
 				//  Should protocol doc for AIP mention this?
-				dataToSign = append(dataToSign, cell.B)
+				if cell.B != nil {
+					dataToSign = append(dataToSign, *cell.B)
+				}
 			}
 		}
 	}
@@ -142,20 +144,26 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 		return nil, nil, err
 	}
 
+	algoHex := hex.EncodeToString([]byte(algorithm))
+	algoStr := string(algorithm)
+
+	hexAlgoSigningComponent := hex.EncodeToString([]byte(a.AlgorithmSigningComponent))
+	hexSig := hex.EncodeToString([]byte(a.Signature))
+
 	// Create the output tape
-	output.Tape = append(output.Tape, bob.Tape{
-		Cell: []bob.Cell{{
-			H: hex.EncodeToString([]byte(Prefix)),
-			S: Prefix,
+	output.Tape = append(output.Tape, bpu.Tape{
+		Cell: []bpu.Cell{{
+			H: &hexPrefix,
+			S: &Prefix,
 		}, {
-			H: hex.EncodeToString([]byte(algorithm)),
-			S: string(algorithm),
+			H: &algoHex,
+			S: &algoStr,
 		}, {
-			H: hex.EncodeToString([]byte(a.AlgorithmSigningComponent)),
-			S: a.AlgorithmSigningComponent,
+			H: &hexAlgoSigningComponent,
+			S: &a.AlgorithmSigningComponent,
 		}, {
-			H: hex.EncodeToString([]byte(a.Signature)),
-			S: a.Signature,
+			H: &hexSig,
+			S: &a.Signature,
 		}},
 	})
 
@@ -163,13 +171,13 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bob.Outp
 }
 
 // ValidateTapes validates the AIP signature for a given []bob.Tape
-func ValidateTapes(tapes []bob.Tape) (bool, error) {
+func ValidateTapes(tapes []bpu.Tape) (bool, error) {
 	// Loop tapes -> cells (only supporting 1 sig right now)
 	for _, tape := range tapes {
 		for _, cell := range tape.Cell {
 
 			// Once we hit AIP Prefix, stop
-			if cell.S == Prefix {
+			if cell.S != nil && *cell.S == Prefix {
 				a := NewFromTape(tape)
 				a.SetDataFromTapes(tapes)
 				return a.Validate()
