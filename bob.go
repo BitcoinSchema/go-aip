@@ -85,16 +85,19 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
 		for _, tape := range tapes {
 			for _, cell := range tape.Cell {
-				if cell.S != nil && *cell.S != Prefix {
+				if cell.S != nil && *cell.S == Prefix {
+					data = append(data, pipe)
+					a.Data = data
+					return
+				} else {
 					// Skip the OPS
 					if cell.Ops != nil {
 						continue
 					}
-					data = append(data, strings.TrimSpace(*cell.S))
-				} else {
-					data = append(data, pipe)
-					a.Data = data
-					return
+					if cell.S != nil {
+
+						data = append(data, strings.TrimSpace(*cell.S))
+					}
 				}
 			}
 		}
@@ -134,6 +137,9 @@ func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bpu.Outp
 				if cell.B != nil {
 					dataToSign = append(dataToSign, *cell.B)
 				}
+				// else if cell.Op != nil {
+				// 	dataToSign = append(dataToSign, string(*cell.Op))
+				// }
 			}
 		}
 	}
