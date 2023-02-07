@@ -89,16 +89,16 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 					data = append(data, pipe)
 					a.Data = data
 					return
-				} else {
-					// Skip the OPS
-					if cell.Ops != nil {
-						continue
-					}
-					if cell.S != nil {
-
-						data = append(data, strings.TrimSpace(*cell.S))
-					}
 				}
+				// Skip the OPS
+				if cell.Ops != nil {
+					continue
+				}
+				if cell.S != nil {
+
+					data = append(data, strings.TrimSpace(*cell.S))
+				}
+
 			}
 		}
 
