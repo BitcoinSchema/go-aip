@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/bitcoinschema/go-bob"
-	"github.com/btcsuite/btcd/txscript"
+	"github.com/bitcoinsv/bsvd/txscript"
 )
 
 const examplePrivateKey = "54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd"

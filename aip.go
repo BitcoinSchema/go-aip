@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
+	"github.com/bitcoinsv/bsvd/txscript"
 	"github.com/bitcoinsv/bsvutil"
-	"github.com/btcsuite/btcd/txscript"
 	"github.com/libsv/go-bt"
 )
 
