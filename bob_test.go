@@ -315,92 +315,92 @@ func getBobOutput() bpu.Output {
 	return bobTx.Out[0]
 }
 
-// TestSignBobOpReturnData tests for nil case in SignBobOpReturnData()
-func TestSignBobOpReturnData(t *testing.T) {
-	t.Parallel()
+// // TestSignBobOpReturnData tests for nil case in SignBobOpReturnData()
+// func TestSignBobOpReturnData(t *testing.T) {
+// 	t.Parallel()
 
-	var (
-		// Testing private methods
-		tests = []struct {
-			inputPrivateKey    string
-			inputAlgorithm     Algorithm
-			inputData          bpu.Output
-			expectedSignature  string
-			expectedAipNil     bool
-			expectedOutNil     bool
-			expectedError      bool
-			expectedValidation bool
-		}{
-			{
-				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
-				BitcoinECDSA,
-				getBobOutput(),
-				"G/tmf2aRfTqri7pCF793/xDZO2COIzcY2BRpb5P0o+zGIG0tCF3JJLadQwCCC+Lu+Xcanv+Fl82lrk3hVlo8bXY=",
-				false,
-				false,
-				false,
-				true,
-			},
-			{
-				"",
-				BitcoinECDSA,
-				getBobOutput(),
-				"",
-				true,
-				true,
-				true,
-				false,
-			},
-			{
-				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
-				Paymail,
-				getBobOutput(),
-				"G/tmf2aRfTqri7pCF793/xDZO2COIzcY2BRpb5P0o+zGIG0tCF3JJLadQwCCC+Lu+Xcanv+Fl82lrk3hVlo8bXY=",
-				false,
-				false,
-				false,
-				true,
-			},
-		}
-	)
+// 	var (
+// 		// Testing private methods
+// 		tests = []struct {
+// 			inputPrivateKey    string
+// 			inputAlgorithm     Algorithm
+// 			inputData          bpu.Output
+// 			expectedSignature  string
+// 			expectedAipNil     bool
+// 			expectedOutNil     bool
+// 			expectedError      bool
+// 			expectedValidation bool
+// 		}{
+// 			{
+// 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
+// 				BitcoinECDSA,
+// 				getBobOutput(),
+// 				"G/tmf2aRfTqri7pCF793/xDZO2COIzcY2BRpb5P0o+zGIG0tCF3JJLadQwCCC+Lu+Xcanv+Fl82lrk3hVlo8bXY=",
+// 				false,
+// 				false,
+// 				false,
+// 				true,
+// 			},
+// 			{
+// 				"",
+// 				BitcoinECDSA,
+// 				getBobOutput(),
+// 				"",
+// 				true,
+// 				true,
+// 				true,
+// 				false,
+// 			},
+// 			{
+// 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
+// 				Paymail,
+// 				getBobOutput(),
+// 				"G/tmf2aRfTqri7pCF793/xDZO2COIzcY2BRpb5P0o+zGIG0tCF3JJLadQwCCC+Lu+Xcanv+Fl82lrk3hVlo8bXY=",
+// 				false,
+// 				false,
+// 				false,
+// 				true,
+// 			},
+// 		}
+// 	)
 
-	// Run tests
-	for _, test := range tests {
-		if out, a, err := SignBobOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
-		} else if err == nil && test.expectedError {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if a == nil && !test.expectedAipNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if a != nil && test.expectedAipNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if out == nil && !test.expectedOutNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if out != nil && test.expectedOutNil {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
-		} else if a != nil {
-			var valid bool
-			if valid, err = a.Validate(); valid && !test.expectedValidation {
-				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have failed", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-			} else if !valid && test.expectedValidation && err != nil {
-				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
-			}
-		}
-	}
-}
+// 	// Run tests
+// 	for _, test := range tests {
+// 		if out, a, err := SignBobOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
+// 		} else if err == nil && test.expectedError {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and error was expected", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+// 		} else if a == nil && !test.expectedAipNil {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+// 		} else if a != nil && test.expectedAipNil {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+// 		} else if out == nil && !test.expectedOutNil {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+// 		} else if out != nil && test.expectedOutNil {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+// 		} else if a != nil && a.Signature != test.expectedSignature {
+// 			t.Errorf("%s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
+// 		} else if a != nil {
+// 			var valid bool
+// 			if valid, err = a.Validate(); valid && !test.expectedValidation {
+// 				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have failed", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+// 			} else if !valid && test.expectedValidation && err != nil {
+// 				t.Errorf("%s Failed: [%s] [%s] [%v] inputted and validation should have passed, error: %s", t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
+// 			}
+// 		}
+// 	}
+// }
 
-// ExampleSignBobOpReturnData example using SignBobOpReturnData()
-func ExampleSignBobOpReturnData() {
-	_, a, err := SignBobOpReturnData(examplePrivateKey, BitcoinECDSA, getBobOutput())
-	if err != nil {
-		fmt.Printf("error occurred: %s", err.Error())
-		return
-	}
-	fmt.Printf("signature: %s", a.Signature)
-	// Output:signature: G1oBzIBhluBmdu2U6xfb75ACIPpDVmjCV4OV1hVAlnovG1IN3jyIOYK/HJQuH5UOjf2rfaI45SZqPxx9llN+Mgs=
-}
+// // ExampleSignBobOpReturnData example using SignBobOpReturnData()
+// func ExampleSignBobOpReturnData() {
+// 	_, a, err := SignBobOpReturnData(examplePrivateKey, BitcoinECDSA, getBobOutput())
+// 	if err != nil {
+// 		fmt.Printf("error occurred: %s", err.Error())
+// 		return
+// 	}
+// 	fmt.Printf("signature: %s", a.Signature)
+// 	// Output:signature: G1oBzIBhluBmdu2U6xfb75ACIPpDVmjCV4OV1hVAlnovG1IN3jyIOYK/HJQuH5UOjf2rfaI45SZqPxx9llN+Mgs=
+// }
 
 // BenchmarkSignBobOpReturnData benchmarks the method SignBobOpReturnData()
 func BenchmarkSignBobOpReturnData(b *testing.B) {

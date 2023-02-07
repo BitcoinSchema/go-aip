@@ -95,7 +95,6 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 					continue
 				}
 				if cell.S != nil {
-
 					data = append(data, strings.TrimSpace(*cell.S))
 				}
 
