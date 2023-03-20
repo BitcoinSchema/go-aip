@@ -28,17 +28,28 @@ func (a *Aip) FromTape(tape bpu.Tape) {
 
 	// Loop to find start of AIP
 	var startIndex int
+	found := false
 	for i, cell := range tape.Cell {
 		if *cell.S == Prefix {
 			startIndex = i
+			found = true
 			break
 		}
 	}
 
+	if !found {
+		return
+	}
 	// Set the AIP fields
-	a.Algorithm = Algorithm(*tape.Cell[startIndex+1].S)
-	a.AlgorithmSigningComponent = *tape.Cell[startIndex+2].S
-	a.Signature = *tape.Cell[startIndex+3].B
+	if tape.Cell[startIndex+1].S != nil {
+		a.Algorithm = Algorithm(*tape.Cell[startIndex+1].S)
+	}
+	if tape.Cell[startIndex+2].S != nil {
+		a.AlgorithmSigningComponent = *tape.Cell[startIndex+2].S
+	}
+	if tape.Cell[startIndex+3].B != nil {
+		a.Signature = *tape.Cell[startIndex+3].B
+	}
 
 	// Final index count
 	finalIndexCount := startIndex + 4
