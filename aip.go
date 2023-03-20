@@ -14,9 +14,8 @@ import (
 	"strings"
 
 	"github.com/bitcoinschema/go-bitcoin"
+	"github.com/bitcoinsv/bsvd/txscript"
 	"github.com/bitcoinsv/bsvutil"
-	"github.com/btcsuite/btcd/txscript"
-	"github.com/libsv/go-bt"
 )
 
 // Prefix is the Bitcom prefix used by AIP
@@ -117,7 +116,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 
 // SignOpReturnData will append the given data and return an bt.Output
 func SignOpReturnData(privateKey string, algorithm Algorithm,
-	data [][]byte) (out *bt.Output, outData [][]byte, a *Aip, err error) {
+	data [][]byte) (outData [][]byte, a *Aip, err error) {
 
 	// Sign with AIP
 	if a, err = Sign(privateKey, algorithm, string(bytes.Join(data, []byte{}))); err != nil {
@@ -133,7 +132,7 @@ func SignOpReturnData(privateKey string, algorithm Algorithm,
 		[]byte(a.Signature),
 	)
 
-	// Create the output
-	out, err = bt.NewOpReturnPartsOutput(outData)
+	// // Create the output
+	// out, err = bt.NewOpReturnPartsOutput(outData)
 	return
 }

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/bitcoinschema/go-bob"
-	"github.com/btcsuite/btcd/txscript"
 	"github.com/libsv/go-bt/v2"
 )
 
@@ -239,12 +238,6 @@ func TestAip_Validate(t *testing.T) {
 				Data:                      nil,
 				Signature:                 "IL1f9X5R//+1X+nBf4alcMe+Fom0Dtv5J4R+LBHiDyHYSt6OZqvuX3tTHwZefg/iXu/lsAScd2ekQci+wtbDyic=",
 			}, false},
-			{&Aip{
-				Algorithm:                 Paymail,
-				AlgorithmSigningComponent: "0",
-				Data:                      []string{string(rune(txscript.OP_RETURN)), exampleMessage},
-				Signature:                 "HOpsJCCkmIOBs8HJIn3Od7aa/SLycQSsZ5QuLvaSlKobYvxpkE5Lcb4fAFLXp1h5pJTEHtm/SZICybovE8AcpiM=",
-			}, false},
 		}
 	)
 
@@ -354,7 +347,7 @@ func TestSignOpReturnData(t *testing.T) {
 
 	// Run tests
 	for idx, test := range tests {
-		if out, _, a, err := SignOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
+		if outData, a, err := SignOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
 		} else if err == nil && test.expectedError {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error was expected", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
@@ -362,34 +355,31 @@ func TestSignOpReturnData(t *testing.T) {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a != nil && test.expectedAipNil {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if out == nil && !test.expectedOutNil {
+		} else if outData == nil && !test.expectedOutNil {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if out != nil && test.expectedOutNil {
+		} else if outData != nil && test.expectedOutNil {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
 		} else if a != nil && a.Signature != test.expectedSignature {
 			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
-		} else if out != nil && out.GetLockingScriptHexString() != test.expectedOutput {
-			t.Logf("out %s", out.String())
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected output [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedOutput, out.GetLockingScriptHexString())
 		}
 	}
 }
 
 // ExampleSignOpReturnData example using SignOpReturnData()
 func ExampleSignOpReturnData() {
-	out, _, a, err := SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
+	outData, a, err := SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
 	if err != nil {
 		fmt.Printf("error occurred: %s", err.Error())
 		return
 	}
-	fmt.Printf("signature: %s output: %s", a.Signature, out.GetLockingScriptHexString())
-	// Output:signature: G7zptA7IbNaa7PQlblH1v5ElaOj3Zo49oiUrDMqfWM4QFNdIKDnXMkxLU1YgrxODd8uFNU279utUCC4MGPp5pjM= output: 006a13736f6d65206f705f72657475726e206461746122313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f454344534122314477364565464e525a5374585455454e52725639744755683172543268693659504c5847377a7074413749624e61613750516c626c48317635456c614f6a335a6f34396f695572444d7166574d3451464e64494b446e584d6b784c5531596772784f44643875464e553237397574554343344d47507035706a4d3d
+	fmt.Printf("signature: %s outData: %x", a.Signature, outData)
+	// Output:signature: G7zptA7IbNaa7PQlblH1v5ElaOj3Zo49oiUrDMqfWM4QFNdIKDnXMkxLU1YgrxODd8uFNU279utUCC4MGPp5pjM= outData: [736f6d65206f705f72657475726e2064617461 313550636948473232534e4c514a584d6f5355615756693757537163376843667661 424954434f494e5f4543445341 314477364565464e525a5374585455454e5272563974475568317254326869365950 47377a7074413749624e61613750516c626c48317635456c614f6a335a6f34396f695572444d7166574d3451464e64494b446e584d6b784c5531596772784f44643875464e553237397574554343344d47507035706a4d3d]
 }
 
 // BenchmarkSignOpReturnData benchmarks the method SignOpReturnData()
 func BenchmarkSignOpReturnData(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, _, _, _ = SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
+		_, _, _ = SignOpReturnData(examplePrivateKey, BitcoinECDSA, [][]byte{[]byte("some op_return data")})
 	}
 }
 

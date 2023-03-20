@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	out, _, a, err := aip.SignOpReturnData(
+	outData, a, err := aip.SignOpReturnData(
 		"54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd",
 		aip.BitcoinECDSA,
 		[][]byte{[]byte("some op_return data")},
@@ -17,5 +17,5 @@ func main() {
 	}
 	log.Printf("address: %s", a.AlgorithmSigningComponent)
 	log.Printf("signature: %s", a.Signature)
-	log.Printf("output: %s", out.GetLockingScriptHexString())
+	log.Printf("output: %x", outData)
 }
