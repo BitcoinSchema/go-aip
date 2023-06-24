@@ -114,7 +114,7 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	return
 }
 
-// SignOpReturnData will append the given data and return an bt.Output
+// SignOpReturnData will append the given data and return a bt.Output
 func SignOpReturnData(privateKey string, algorithm Algorithm,
 	data [][]byte) (outData [][]byte, a *Aip, err error) {
 
