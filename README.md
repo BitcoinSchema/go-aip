@@ -115,7 +115,7 @@ vet                   Run the Go vet application
 
 ## Examples & Tests
 All unit tests and [examples](examples) run via [GitHub Actions](https://github.com/BitcoinSchema/go-aip/actions) and
-uses [Go version 1.17.x](https://golang.org/doc/go1.17). View the [configuration file](.github/workflows/run-tests.yml).
+uses [Go version 1.18.x](https://golang.org/doc/go1.18). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script
