@@ -118,7 +118,7 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 
 		for _, tape := range tapes {
 			for _, cell := range tape.Cell {
-				if *cell.S != Prefix && contains(a.Indices, indexCt) {
+				if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
 					data = append(data, *cell.S)
 				} else {
 					data = append(data, pipe)
