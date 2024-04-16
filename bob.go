@@ -61,6 +61,9 @@ func (a *Aip) FromTape(tape bpu.Tape) {
 		// Loop over remaining indices if they exist and append to indices slice
 		a.Indices = make([]int, len(tape.Cell)-finalIndexCount)
 		for x := finalIndexCount - 1; x < len(tape.Cell); x++ {
+			if tape.Cell[x].S == nil {
+				continue
+			}
 			if index, err := strconv.Atoi(*tape.Cell[x].S); err == nil {
 				a.Indices = append(a.Indices, index)
 			}
