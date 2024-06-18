@@ -105,7 +105,8 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 					return
 				}
 				// Skip the OPS
-				if cell.Ops != nil {
+				// if cell.Ops != nil {
+				if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
 					continue
 				}
 				if cell.S != nil {
