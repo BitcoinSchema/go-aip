@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	github.com/bitcoin-sv/go-sdk v1.1.5
+	github.com/bitcoin-sv/go-sdk v1.1.7
 	github.com/bitcoinschema/go-bob v0.4.3
 	github.com/bitcoinschema/go-bpu v0.1.3
 

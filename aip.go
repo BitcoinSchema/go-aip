@@ -97,7 +97,7 @@ func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Ai
 	a = &Aip{Algorithm: algorithm, Data: prependedData}
 
 	// Sign using the private key and the message
-	if sig, err := bsm.SignMessageWithCompression(privateKey, []byte(strings.Join(prependedData, "")), false); err != nil {
+	if sig, err := bsm.SignMessage(privateKey, []byte(strings.Join(prependedData, ""))); err != nil {
 		return nil, err
 	} else {
 		a.Signature = base64.StdEncoding.EncodeToString(sig)
@@ -108,7 +108,7 @@ func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Ai
 	case BitcoinECDSA, BitcoinSignedMessage:
 		// Signing component = bitcoin address
 		// Get the address of the private key
-		if add, err := script.NewAddressFromPublicKeyWithCompression(privateKey.PubKey(), true, false); err != nil {
+		if add, err := script.NewAddressFromPublicKey(privateKey.PubKey(), true); err != nil {
 			return nil, err
 		} else {
 			a.AlgorithmSigningComponent = add.AddressString
@@ -119,7 +119,7 @@ func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Ai
 		// if pubkey, err := bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
 		// 	return
 		// }
-		a.AlgorithmSigningComponent = hex.EncodeToString(privateKey.PubKey().SerializeUncompressed())
+		a.AlgorithmSigningComponent = hex.EncodeToString(privateKey.PubKey().SerializeCompressed())
 	}
 
 	return
