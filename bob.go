@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
 	"github.com/bitcoinschema/go-bpu"
 )
 
@@ -137,7 +138,7 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
 // protocol separator followed by AIP information
-func SignBobOpReturnData(privateKey string, algorithm Algorithm, output bpu.Output) (*bpu.Output, *Aip, error) {
+func SignBobOpReturnData(privateKey *ec.PrivateKey, algorithm Algorithm, output bpu.Output) (*bpu.Output, *Aip, error) {
 
 	// Parse the data to sign
 	var dataToSign []string

@@ -14,15 +14,19 @@
 <br/>
 
 ## Table of Contents
-- [Installation](#installation)
-- [Documentation](#documentation)
-- [Examples & Tests](#examples--tests)
-- [Benchmarks](#benchmarks)
-- [Code Standards](#code-standards)
-- [Usage](#usage)
-- [Maintainers](#maintainers)
-- [Contributing](#contributing)
-- [License](#license)
+- [go-aip](#go-aip)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Documentation](#documentation)
+    - [Features](#features)
+  - [Examples \& Tests](#examples--tests)
+  - [Benchmarks](#benchmarks)
+  - [Code Standards](#code-standards)
+  - [Usage](#usage)
+  - [Maintainers](#maintainers)
+  - [Contributing](#contributing)
+    - [How can I help?](#how-can-i-help)
+  - [License](#license)
 
 <br/>
 
@@ -51,9 +55,8 @@ View the generated [documentation](https://pkg.go.dev/github.com/bitcoinschema/g
 <summary><strong><code>Package Dependencies</code></strong></summary>
 <br/>
 
-- [bitcoinschema/go-bitcoin](https://github.com/bitcoinschema/go-bitcoin)
+- [bitcoin-sv/go-sdk](https://github.com/bitcoin-sv/go-sdk)
 - [bitcoinschema/go-bob](https://github.com/bitcoinschema/go-bob)
-- [libsv/go-bt](https://github.com/libsv/go-bt)
 </details>
 
 <details>

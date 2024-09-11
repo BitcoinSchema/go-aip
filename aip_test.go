@@ -1,15 +1,21 @@
 package aip
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strings"
 	"testing"
 
+	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
+	"github.com/bitcoin-sv/go-sdk/transaction"
 	"github.com/bitcoinschema/go-bob"
-	"github.com/libsv/go-bt/v2"
 )
 
-const examplePrivateKey = "54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd"
+const examplePrivateKeyHex = "54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd"
+
+var privBytes, _ = hex.DecodeString(examplePrivateKeyHex)
+var examplePrivateKey, _ = ec.PrivateKeyFromBytes(privBytes)
+
 const exampleMessage = "test message"
 
 // TestSign will test the method Sign()
@@ -42,22 +48,22 @@ func TestSign(t *testing.T) {
 				false,
 				false,
 			},
-			{
-				"",
-				BitcoinECDSA,
-				exampleMessage,
-				"",
-				false,
-				true,
-			},
-			{
-				"",
-				Paymail,
-				exampleMessage,
-				"",
-				false,
-				true,
-			},
+			// {
+			// 	"",
+			// 	BitcoinECDSA,
+			// 	exampleMessage,
+			// 	"",
+			// 	false,
+			// 	true,
+			// },
+			// {
+			// 	"",
+			// 	Paymail,
+			// 	exampleMessage,
+			// 	"",
+			// 	false,
+			// 	true,
+			// },
 			{
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				BitcoinECDSA,
@@ -66,22 +72,22 @@ func TestSign(t *testing.T) {
 				false,
 				false,
 			},
-			{
-				"00000",
-				BitcoinECDSA,
-				"",
-				"",
-				false,
-				true,
-			},
-			{
-				"00000",
-				Paymail,
-				"",
-				"",
-				false,
-				true,
-			},
+			// {
+			// 	"00000",
+			// 	BitcoinECDSA,
+			// 	"",
+			// 	"",
+			// 	false,
+			// 	true,
+			// },
+			// {
+			// 	"00000",
+			// 	Paymail,
+			// 	"",
+			// 	"",
+			// 	false,
+			// 	true,
+			// },
 			{
 				"e83385af76b2b1997326b567461fb73dd9c27eab9e1e86d26779f4650c5f2b75",
 				BitcoinECDSA,
@@ -135,20 +141,25 @@ func TestSign(t *testing.T) {
 
 	// Run tests
 	for testNo, test := range tests {
-		if a, err := Sign(test.inputPrivateKey, test.inputAlgorithm, test.inputMessage); err != nil && !test.expectedError {
-			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and error not expected but got: %s", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
-		} else if err == nil && test.expectedError {
-			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and error was expected", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
-		} else if a == nil && !test.expectedNil {
-			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and nil was not expected (aip)", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
-		} else if a != nil && test.expectedNil {
-			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and nil was expected (aip)", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
-		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and expected [%s] but got [%s]", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, test.expectedSignature, a.Signature)
-		} else if a != nil && err == nil {
-			// Test validation - THIS WILL NOT WORK BECAUSE DATA IS NOT SET
-			if _, err = a.Validate(); err != nil {
-				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and validation failed: %s", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
+		if privBytes, err := hex.DecodeString(test.inputPrivateKey); err != nil {
+			t.Errorf("%d %s Failed: [%s] inputted and error not expected but got: %s", testNo, t.Name(), test.inputPrivateKey, err.Error())
+		} else {
+			priv, _ := ec.PrivateKeyFromBytes(privBytes)
+			if a, err := Sign(priv, test.inputAlgorithm, test.inputMessage); err != nil && !test.expectedError {
+				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and error not expected but got: %s", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
+			} else if err == nil && test.expectedError {
+				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and error was expected", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			} else if a == nil && !test.expectedNil {
+				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and nil was not expected (aip)", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			} else if a != nil && test.expectedNil {
+				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and nil was expected (aip)", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage)
+			} else if a != nil && a.Signature != test.expectedSignature {
+				t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and expected [%s] but got [%s]", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, test.expectedSignature, a.Signature)
+			} else if a != nil && err == nil {
+				// Test validation - THIS WILL NOT WORK BECAUSE DATA IS NOT SET
+				if _, err = a.Validate(); err != nil {
+					t.Errorf("%d %s Failed: [%s] [%s] [%s] inputted and validation failed: %s", testNo, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputMessage, err.Error())
+				}
 			}
 		}
 	}
@@ -322,16 +333,16 @@ func TestSignOpReturnData(t *testing.T) {
 				false,
 				false,
 			},
-			{
-				"",
-				BitcoinECDSA,
-				[][]byte{[]byte(exampleMessage)},
-				"",
-				"",
-				false,
-				true,
-				true,
-			},
+			// {
+			// 	"",
+			// 	BitcoinECDSA,
+			// 	[][]byte{[]byte(exampleMessage)},
+			// 	"",
+			// 	"",
+			// 	false,
+			// 	true,
+			// 	true,
+			// },
 			{
 				"80699541455b59a8a8a33b85892319de8b8e8944eb8b48e9467137825ae192e59f01",
 				Paymail,
@@ -347,20 +358,25 @@ func TestSignOpReturnData(t *testing.T) {
 
 	// Run tests
 	for idx, test := range tests {
-		if outData, a, err := SignOpReturnData(test.inputPrivateKey, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
-		} else if err == nil && test.expectedError {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error was expected", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if a == nil && !test.expectedAipNil {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if a != nil && test.expectedAipNil {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if outData == nil && !test.expectedOutNil {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if outData != nil && test.expectedOutNil {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
-		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
+		if privBytes, err := hex.DecodeString(test.inputPrivateKey); err != nil {
+			t.Errorf("%d %s Failed: [%s] inputted and error not expected but got: %s", idx, t.Name(), test.inputPrivateKey, err.Error())
+		} else {
+			priv, _ := ec.PrivateKeyFromBytes(privBytes)
+			if outData, a, err := SignOpReturnData(priv, test.inputAlgorithm, test.inputData); err != nil && !test.expectedError {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error not expected but got: %s", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, err.Error())
+			} else if err == nil && test.expectedError {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and error was expected", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			} else if a == nil && !test.expectedAipNil {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			} else if a != nil && test.expectedAipNil {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (aip)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			} else if outData == nil && !test.expectedOutNil {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was not expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			} else if outData != nil && test.expectedOutNil {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and nil was expected (out)", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData)
+			} else if a != nil && a.Signature != test.expectedSignature {
+				t.Errorf("%d %s Failed: [%s] [%s] [%v] inputted and expected signature [%s] but got [%s]", idx, t.Name(), test.inputPrivateKey, test.inputAlgorithm, test.inputData, test.expectedSignature, a.Signature)
+			}
 		}
 	}
 }
@@ -384,7 +400,7 @@ func BenchmarkSignOpReturnData(b *testing.B) {
 }
 
 func TestBoom2FromTx(t *testing.T) {
-	tx, err := bt.NewTxFromString(`0100000001960b7798ec6d83359c0caeb9a9c46aad7e12d98864b3933617ac6ae5da778aa3020000006b4830450221008f7c4e00ae9086f134fd65eb8d60ba309c3b09a11f0c653710ae4e3522ac6593022007ec80fa044d50b0ccef680cfd2102a04ed76e9065ff8d8645ae0710b5f12aca4121036eed1297fcbbc0800e11c5df3ea54aec0fe7024522e0d31d10197754f023ea16ffffffff030000000000000000fdff00006a0a6f6e636861696e2e737606706f772e636f0375726c4cae7b2275726c223a2268747470733a2f2f726f62657274666b656e6e6564796a722e737562737461636b2e636f6d2f702f72666b2d6a722d6e65772d68616d7073686972652d696e737469747574652d706f6c69746963732d737065656368222c225f617070223a22706f772e636f222c225f74797065223a2275726c222c225f6e6f6e6365223a2265333838346438312d613738322d346531372d616230352d333030333362373261366230227d017c22313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f454344534100000105a0860100000000001976a9146821cc34e3c6de0d2c34965c99167092718bd5ab88ac8c024f0c000000001976a91471b62aeab78c77e3b36a7e260210f0fd6098411d88ac00000000`)
+	tx, err := transaction.NewTransactionFromHex(`0100000001960b7798ec6d83359c0caeb9a9c46aad7e12d98864b3933617ac6ae5da778aa3020000006b4830450221008f7c4e00ae9086f134fd65eb8d60ba309c3b09a11f0c653710ae4e3522ac6593022007ec80fa044d50b0ccef680cfd2102a04ed76e9065ff8d8645ae0710b5f12aca4121036eed1297fcbbc0800e11c5df3ea54aec0fe7024522e0d31d10197754f023ea16ffffffff030000000000000000fdff00006a0a6f6e636861696e2e737606706f772e636f0375726c4cae7b2275726c223a2268747470733a2f2f726f62657274666b656e6e6564796a722e737562737461636b2e636f6d2f702f72666b2d6a722d6e65772d68616d7073686972652d696e737469747574652d706f6c69746963732d737065656368222c225f617070223a22706f772e636f222c225f74797065223a2275726c222c225f6e6f6e6365223a2265333838346438312d613738322d346531372d616230352d333030333362373261366230227d017c22313550636948473232534e4c514a584d6f53556157566937575371633768436676610d424954434f494e5f454344534100000105a0860100000000001976a9146821cc34e3c6de0d2c34965c99167092718bd5ab88ac8c024f0c000000001976a91471b62aeab78c77e3b36a7e260210f0fd6098411d88ac00000000`)
 	if err != nil {
 		t.Fatalf("error occurred: %s", err)
 	}
