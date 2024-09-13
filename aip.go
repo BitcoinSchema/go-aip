@@ -70,14 +70,19 @@ func (a *Aip) Validate() (bool, error) {
 		if err != nil {
 			return false, err
 		}
-
-		if pubKey, err := ec.PublicKeyFromString(a.AlgorithmSigningComponent); err != nil {
+		var pubKey *ec.PublicKey
+		var addr *script.Address
+		if pubKey, err = ec.PublicKeyFromString(a.AlgorithmSigningComponent); err != nil {
 			return false, err
-		} else if addr, err := script.NewAddressFromPublicKeyWithCompression(pubKey, true, wasCompressed); err != nil {
-			return false, err
-		} else {
-			a.AlgorithmSigningComponent = addr.AddressString
 		}
+		if addr, err = script.NewAddressFromPublicKeyWithCompression(
+			pubKey,
+			true,
+			wasCompressed); err != nil {
+			return false, err
+		}
+		a.AlgorithmSigningComponent = addr.AddressString
+
 	}
 
 	// You get the address associated with the pki instead of the current address
@@ -97,11 +102,12 @@ func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Ai
 	a = &Aip{Algorithm: algorithm, Data: prependedData}
 
 	// Sign using the private key and the message
-	if sig, err := bsm.SignMessage(privateKey, []byte(strings.Join(prependedData, ""))); err != nil {
+	var sig []byte
+	if sig, err = bsm.SignMessage(privateKey, []byte(strings.Join(prependedData, ""))); err != nil {
 		return nil, err
-	} else {
-		a.Signature = base64.StdEncoding.EncodeToString(sig)
 	}
+
+	a.Signature = base64.StdEncoding.EncodeToString(sig)
 
 	// Store address vs pubkey
 	switch algorithm {
