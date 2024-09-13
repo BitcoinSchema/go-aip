@@ -8,14 +8,15 @@ package aip
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/bitcoinschema/go-bitcoin"
-	"github.com/bitcoinsv/bsvd/txscript"
-	"github.com/bitcoinsv/bsvutil"
+	bsm "github.com/bitcoin-sv/go-sdk/compat/bsm"
+	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
+	"github.com/bitcoin-sv/go-sdk/script"
 )
 
 // Prefix is the Bitcom prefix used by AIP
@@ -24,7 +25,7 @@ var Prefix = "15PciHG22SNLQJXMoSUaWVi7WSqc7hCfva"
 var hexPrefix = hex.EncodeToString([]byte(Prefix))
 
 const pipe = "|"
-const opReturn = string(rune(txscript.OP_RETURN)) // creates: j
+const opReturn = string(rune(script.OpRETURN)) // creates: j
 
 // Algorithm is an enum for the different possible signature algorithms
 type Algorithm string
@@ -58,30 +59,40 @@ func (a *Aip) Validate() (bool, error) {
 		return false, fmt.Errorf("the first item in payload is always OP_RETURN, got: %s", a.Data[0])
 	}
 
+	sig, err := base64.StdEncoding.DecodeString(a.Signature)
+	if err != nil {
+		return false, err
+	}
 	// Convert pubkey to address
 	if a.Algorithm == Paymail {
 		// Detect whether this key was compressed when sig was made
-		_, wasCompressed, err := bitcoin.PubKeyFromSignature(a.Signature, strings.Join(a.Data, ""))
+		_, wasCompressed, err := bsm.PubKeyFromSignature(sig, []byte(strings.Join(a.Data, "")))
 		if err != nil {
 			return false, err
 		}
-
-		// Get the public address for this paymail from pki
-		var addr *bsvutil.LegacyAddressPubKeyHash
-		if addr, err = bitcoin.GetAddressFromPubKeyString(a.AlgorithmSigningComponent, wasCompressed); err != nil {
+		var pubKey *ec.PublicKey
+		var addr *script.Address
+		if pubKey, err = ec.PublicKeyFromString(a.AlgorithmSigningComponent); err != nil {
 			return false, err
 		}
-		a.AlgorithmSigningComponent = addr.String()
+		if addr, err = script.NewAddressFromPublicKeyWithCompression(
+			pubKey,
+			true,
+			wasCompressed); err != nil {
+			return false, err
+		}
+		a.AlgorithmSigningComponent = addr.AddressString
+
 	}
 
 	// You get the address associated with the pki instead of the current address
-	err := bitcoin.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, strings.Join(a.Data, ""))
+	err = bsm.VerifyMessage(a.AlgorithmSigningComponent, sig, []byte(strings.Join(a.Data, "")))
 	return err == nil, err
 }
 
 // Sign will provide an AIP signature for a given private key and message using
 // the provided algorithm. It prepends an OP_RETURN to the payload
-func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err error) {
+func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Aip, err error) {
 
 	// Prepend the OP_RETURN to keep consistent with BitcoinFiles SDK
 	// data = append(data, []byte{byte(txscript.OP_RETURN)})
@@ -91,31 +102,37 @@ func Sign(privateKey string, algorithm Algorithm, message string) (a *Aip, err e
 	a = &Aip{Algorithm: algorithm, Data: prependedData}
 
 	// Sign using the private key and the message
-	if a.Signature, err = bitcoin.SignMessage(privateKey, strings.Join(prependedData, ""), false); err != nil {
-		return
+	var sig []byte
+	if sig, err = bsm.SignMessage(privateKey, []byte(strings.Join(prependedData, ""))); err != nil {
+		return nil, err
 	}
+
+	a.Signature = base64.StdEncoding.EncodeToString(sig)
 
 	// Store address vs pubkey
 	switch algorithm {
 	case BitcoinECDSA, BitcoinSignedMessage:
 		// Signing component = bitcoin address
 		// Get the address of the private key
-		if a.AlgorithmSigningComponent, err = bitcoin.GetAddressFromPrivateKeyString(privateKey, false); err != nil {
-			return
+		if add, err := script.NewAddressFromPublicKey(privateKey.PubKey(), true); err != nil {
+			return nil, err
+		} else {
+			a.AlgorithmSigningComponent = add.AddressString
 		}
 	case Paymail:
 		// Signing component = paymail identity key
 		// Get pubKey from private key and overload the address field in AIP
-		if a.AlgorithmSigningComponent, err = bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
-			return
-		}
+		// if pubkey, err := bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
+		// 	return
+		// }
+		a.AlgorithmSigningComponent = hex.EncodeToString(privateKey.PubKey().SerializeCompressed())
 	}
 
 	return
 }
 
 // SignOpReturnData will append the given data and return a bt.Output
-func SignOpReturnData(privateKey string, algorithm Algorithm,
+func SignOpReturnData(privateKey *ec.PrivateKey, algorithm Algorithm,
 	data [][]byte) (outData [][]byte, a *Aip, err error) {
 
 	// Sign with AIP

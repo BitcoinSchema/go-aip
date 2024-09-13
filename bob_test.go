@@ -1,10 +1,12 @@
 package aip
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
 
-	"github.com/bitcoinschema/go-bitcoin"
+	"github.com/bitcoin-sv/go-sdk/script"
+	"github.com/bitcoin-sv/go-sdk/transaction"
 	"github.com/bitcoinschema/go-bob"
 	"github.com/bitcoinschema/go-bpu"
 )
@@ -302,15 +304,20 @@ func BenchmarkValidateTapes(b *testing.B) {
 // getBobOutput helper to get op_return in BOB format
 func getBobOutput() bpu.Output {
 
-	// Create op_return
-	opReturn := bitcoin.OpReturnData{[]byte("prefix1"), []byte("example data"), []byte{0x13, 0x37}}
-
 	// Create a transaction
-	privateKey, _ := bitcoin.PrivateKeyFromString(examplePrivateKey)
-	tx, _ := bitcoin.CreateTx(nil, nil, []bitcoin.OpReturnData{opReturn}, privateKey)
+	// privateKey, _ := bitcoin.PrivateKeyFromString(examplePrivateKey)
+	tx := transaction.NewTransaction()
+	scr := &script.Script{}
+	scr.AppendOpcodes(script.OpFALSE, script.OpRETURN)
+	scr.AppendPushDataArray([][]byte{[]byte("prefix1"), []byte("example data"), {0x13, 0x37}})
+	tx.AddOutput(&transaction.TransactionOutput{
+		Satoshis:      0,
+		LockingScript: scr,
+	})
+	// tx, _ := bitcoin.CreateTx(nil, nil, []bitcoin.OpReturnData{opReturn})
 
 	// Create the bob tx from hex
-	bobTx, _ := bob.NewFromRawTxString(tx.ToString())
+	bobTx, _ := bob.NewFromRawTxString(hex.EncodeToString(tx.Bytes()))
 
 	return bobTx.Out[0]
 }

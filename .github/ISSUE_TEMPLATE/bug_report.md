@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve this project
 labels: bug-p3
-assignees: mrz1836
+assignees: rohenaz
 
 ---
 
