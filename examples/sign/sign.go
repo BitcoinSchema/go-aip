@@ -3,12 +3,14 @@ package main
 import (
 	"log"
 
+	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
 	"github.com/bitcoinschema/go-aip"
 )
 
 func main() {
+	priv, _ := ec.NewPrivateKey()
 	a, err := aip.Sign(
-		"54035dd4c7dda99ac473905a3d82f7864322b49bab1ff441cc457183b9bd8abd",
+		priv,
 		aip.BitcoinECDSA,
 		"example message",
 	)
