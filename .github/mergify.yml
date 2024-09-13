@@ -25,7 +25,7 @@ pull_request_rules:
       - -title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
     actions:
       comment:
-        message: "⚠️ @mrz1836: this is a major version bump and requires your attention"
+        message: "⚠️ @rohenaz: this is a major version bump and requires your attention"
 
   # ===============================================================================
   # AUTOMATIC MERGE (APPROVALS)
@@ -54,7 +54,7 @@ pull_request_rules:
       - "#assignee=0"
     actions:
       assign:
-        users: [ "mrz1836" ]
+        users: [ "rohenaz" ]
 
   # ===============================================================================
   # ALERTS
@@ -167,7 +167,7 @@ pull_request_rules:
       - and:
         - author!=dependabot[bot]
         - author!=mergify[bot]
-        - author!=mrz1836
+        - author!=rohenaz
     actions:
       comment:
         message: |
