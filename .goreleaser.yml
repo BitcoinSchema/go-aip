@@ -1,4 +1,7 @@
-# Make sure to check the documentation at http://goreleaser.com
+# .goreleaser.yaml
+
+version: 2
+
 # ---------------------------
 # General
 # ---------------------------
@@ -16,31 +19,22 @@ changelog:
       - '^test:'
 
 # ---------------------------
-# Publishers
+# Builders
 # ---------------------------
-# publishers:
-#  - name: "Publish GoDocs"
-#    cmd: make godocs
+builds:
+  - skip: true
 
 # ---------------------------
-# Builder
-# ---------------------------
-build:
-  skip: true
-
-# ---------------------------
-# Github Release
+# GitHub Release
 # ---------------------------
 release:
-  prerelease: true
-  name_template: "Release v{{.Version}}"
+  prerelease: false
+  name_template: "Release v{{ .Version }}"
 
 # ---------------------------
 # Announce
 # ---------------------------
 announce:
-
-  # See more at: https://goreleaser.com/customization/announce/#slack
   slack:
     enabled: false
     message_template: '{{ .ProjectName }} {{ .Tag }} is out! Changelog: https://github.com/BitcoinSchema/{{ .ProjectName }}/releases/tag/{{ .Tag }}'
@@ -49,30 +43,20 @@ announce:
     # icon_emoji: ''
     # icon_url: ''
 
-  # See more at: https://goreleaser.com/customization/announce/#twitter
   twitter:
     enabled: false
     message_template: '{{ .ProjectName }} {{ .Tag }} is out!'
 
-  # See more at: https://goreleaser.com/customization/announce/#discord
   discord:
     enabled: false
     message_template: '{{ .ProjectName }} {{ .Tag }} is out!'
-    # Defaults to `GoReleaser`
-    author: ''
-    # Defaults to `3888754` - the grey-ish from goreleaser
-    color: ''
-    # Defaults to `https://goreleaser.com/static/avatar.png`
-    icon_url: ''
+    # author: ''
+    # color: ''
+    # icon_url: ''
 
-  # See more at: https://goreleaser.com/customization/announce/#reddit
   reddit:
     enabled: false
-    # Application ID for Reddit Application
     application_id: ""
-    # Username for your Reddit account
     username: ""
-    # Defaults to `{{ .GitURL }}/releases/tag/{{ .Tag }}`
-    # url_template: 'https://github.com/BitcoinSchema/{{ .ProjectName }}/releases/tag/{{ .Tag }}'
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!`
     title_template: '{{ .ProjectName }} {{ .Tag }} is out!'
+    # url_template: 'https://github.com/BitcoinSchema/{{ .ProjectName }}/releases/tag/{{ .Tag }}'
