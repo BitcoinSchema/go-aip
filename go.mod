@@ -3,7 +3,7 @@ module github.com/bitcoinschema/go-aip
 go 1.23.1
 
 require (
-	github.com/bitcoin-sv/go-sdk v1.1.7
+	github.com/bitcoin-sv/go-sdk v1.1.9
 	github.com/bitcoinschema/go-bob v0.5.0
 	github.com/bitcoinschema/go-bpu v0.2.0
 
