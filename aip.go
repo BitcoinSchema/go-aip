@@ -125,7 +125,7 @@ func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Ai
 		// if pubkey, err := bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
 		// 	return
 		// }
-		a.AlgorithmSigningComponent = hex.EncodeToString(privateKey.PubKey().SerializeCompressed())
+		a.AlgorithmSigningComponent = hex.EncodeToString(privateKey.PubKey().Compressed())
 	}
 
 	return
