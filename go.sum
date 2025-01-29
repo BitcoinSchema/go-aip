@@ -1,5 +1,5 @@
-github.com/bitcoin-sv/go-sdk v1.1.7 h1:JbtaYCGUsHM7HTelLKSJp1NuYiG/xSNOdexjJ6w577A=
-github.com/bitcoin-sv/go-sdk v1.1.7/go.mod h1:NOAkJLbjqKOLuxJmb9ABG86ExTZp4HS8+iygiDIUps4=
+github.com/bitcoin-sv/go-sdk v1.1.18 h1:6lMdQGxlLFWysR2O4m8t0FpdEmdvqHIvYjp8+UV8AjI=
+github.com/bitcoin-sv/go-sdk v1.1.18/go.mod h1:E/gP4wd23aa7clO4vYx+xMNwEs/I3shKv5NdwWgNkx8=
 github.com/bitcoinschema/go-bob v0.5.0 h1:Fjl60RuiQiUuZWLfXE8ETdcgmJBHYu9MYfbrbZU7yHs=
 github.com/bitcoinschema/go-bob v0.5.0/go.mod h1:bREtBvZuMKe3DX2oCUSE+LOuy9HDJnOC3qcWr0oLoy4=
 github.com/bitcoinschema/go-bpu v0.2.0 h1:/WI/F+ShIj50HUD1EBPPHTCBzSeiPDohy77W3Y8xx+s=
@@ -12,7 +12,7 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-golang.org/x/crypto v0.21.0 h1:X31++rzVUdKhX5sWmSOFZxx8UW/ldWx55cbf08iNAMA=
-golang.org/x/crypto v0.21.0/go.mod h1:0BP7YvVV9gBbVKyeTG0Gyn+gZm94bibOW5BjDEYAOMs=
+golang.org/x/crypto v0.31.0 h1:ihbySMvVjLAeSH1IbfcRTkD/iNscyz8rGzjF/E5hV6U=
+golang.org/x/crypto v0.31.0/go.mod h1:kDsLvtWBEx7MV9tJOj9bnXsPbxwJQ6csT/x4KIN4Ssk=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
