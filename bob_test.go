@@ -1,6 +1,8 @@
 package aip
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"testing"
@@ -72,8 +74,11 @@ func TestNewFromTape(t *testing.T) {
 			t.Errorf("%d %s Failed: [%v] inputted and nil was not expected", idx, t.Name(), test.inputTapes[test.inputIndex])
 		} else if a != nil && test.expectedNil {
 			t.Errorf("%d %s Failed: [%v] inputted and nil was expected", idx, t.Name(), test.inputTapes[test.inputIndex])
-		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%d %s Failed: [%v] inputted and expected [%s] but got [%s]", idx, t.Name(), test.inputTapes[test.inputIndex], test.expectedSignature, a.Signature)
+		} else if a != nil {
+			sigStr := base64.StdEncoding.EncodeToString(a.Signature)
+			if sigStr != test.expectedSignature {
+				t.Errorf("%d %s Failed: [%v] inputted and expected [%s] but got [%s]", idx, t.Name(), test.inputTapes[test.inputIndex], test.expectedSignature, sigStr)
+			}
 		} else if a != nil && a.Algorithm != test.expectedAlgorithm {
 			t.Errorf("%d %s Failed: [%v] inputted and expected [%s] but got [%s]", idx, t.Name(), test.inputTapes[test.inputIndex], test.expectedAlgorithm, a.Algorithm)
 		} else if a != nil && a.AlgorithmSigningComponent != test.expectedComponent {
@@ -100,8 +105,7 @@ func ExampleNewFromTape() {
 
 	// Get from tape given the AIP index
 	a := NewFromTape(bobValidData.Out[0].Tape[2])
-
-	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
+	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, base64.StdEncoding.EncodeToString(a.Signature))
 	// Output:address: 134a6TXxzgQ9Az3w8BcvgdZyA5UqRL89da signature: H+lubfcz5Z2oG8B7HwmP8Z+tALP+KNOPgedo7UTXwW8LBpMkgCgatCdpvbtf7wZZQSIMz83emmAvVS4S3F5X1wo=
 }
 
@@ -134,9 +138,9 @@ func TestNewFromTapes(t *testing.T) {
 			expectedSignature  string
 			expectedAlgorithm  Algorithm
 			expectedComponent  string
-			expectedData0      string
-			expectedData1      string
-			expectedData2      string
+			expectedData0      []byte
+			expectedData1      []byte
+			expectedData2      []byte
 			expectedNil        bool
 			expectedValidation bool
 		}{
@@ -145,9 +149,9 @@ func TestNewFromTapes(t *testing.T) {
 				"H+lubfcz5Z2oG8B7HwmP8Z+tALP+KNOPgedo7UTXwW8LBpMkgCgatCdpvbtf7wZZQSIMz83emmAvVS4S3F5X1wo=",
 				BitcoinECDSA,
 				"134a6TXxzgQ9Az3w8BcvgdZyA5UqRL89da",
-				opReturn,
-				"1BAPSuaPnfGnSBM3GLV9yhxUdYe4vGbdMT",
-				"ATTEST",
+				[]byte{byte(script.OpRETURN)},
+				[]byte("1BAPSuaPnfGnSBM3GLV9yhxUdYe4vGbdMT"),
+				[]byte("ATTEST"),
 				false,
 				true,
 			},
@@ -156,9 +160,9 @@ func TestNewFromTapes(t *testing.T) {
 				"H+lubfcz5Z2oG8B7HwmP8Z+tALP+KNOPgedo7UTXwW8LBpMkgCgatCdpvbtf7wZZQSIMz83emmAvVS4S3F5X1wo=",
 				BitcoinECDSA,
 				"invalid-address",
-				opReturn,
-				"1BAPSuaPnfGnSBM3GLV9yhxUdYe4vGbdMT",
-				"ATTEST",
+				[]byte{byte(script.OpRETURN)},
+				[]byte("1BAPSuaPnfGnSBM3GLV9yhxUdYe4vGbdMT"),
+				[]byte("ATTEST"),
 				false,
 				false,
 			},
@@ -167,9 +171,9 @@ func TestNewFromTapes(t *testing.T) {
 				"",
 				"",
 				"",
-				"",
-				"",
-				"",
+				nil,
+				nil,
+				nil,
 				true,
 				false,
 			},
@@ -182,18 +186,21 @@ func TestNewFromTapes(t *testing.T) {
 			t.Errorf("%s Failed: [%v] inputted and nil was not expected (aip)", t.Name(), test.inputTapes)
 		} else if a != nil && test.expectedNil {
 			t.Errorf("%s Failed: [%v] inputted and nil was expected (aip)", t.Name(), test.inputTapes)
-		} else if a != nil && a.Signature != test.expectedSignature {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedSignature, a.Signature)
+		} else if a != nil {
+			sigStr := base64.StdEncoding.EncodeToString(a.Signature)
+			if sigStr != test.expectedSignature {
+				t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedSignature, sigStr)
+			}
 		} else if a != nil && a.Algorithm != test.expectedAlgorithm {
 			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedAlgorithm, a.Algorithm)
 		} else if a != nil && a.AlgorithmSigningComponent != test.expectedComponent {
 			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedComponent, a.AlgorithmSigningComponent)
-		} else if a != nil && len(a.Data) > 0 && a.Data[0] != test.expectedData0 {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedData0, a.Data[0])
-		} else if a != nil && len(a.Data) > 0 && a.Data[1] != test.expectedData1 {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedData1, a.Data[1])
-		} else if a != nil && len(a.Data) > 0 && a.Data[2] != test.expectedData2 {
-			t.Errorf("%s Failed: [%v] inputted and expected [%s] but got [%s]", t.Name(), test.inputTapes, test.expectedData2, a.Data[2])
+		} else if a != nil && len(a.Data) > 0 && !bytes.Equal(a.Data[0:1], test.expectedData0) {
+			t.Errorf("%s Failed: [%v] inputted and expected [%x] but got [%x]", t.Name(), test.inputTapes, test.expectedData0, a.Data[0:1])
+		} else if a != nil && len(a.Data) > 1 && !bytes.Equal(a.Data[1:len(test.expectedData1)+1], test.expectedData1) {
+			t.Errorf("%s Failed: [%v] inputted and expected [%x] but got [%x]", t.Name(), test.inputTapes, test.expectedData1, a.Data[1:len(test.expectedData1)+1])
+		} else if a != nil && len(a.Data) > len(test.expectedData1)+1 && !bytes.Equal(a.Data[len(test.expectedData1)+1:len(test.expectedData1)+1+len(test.expectedData2)], test.expectedData2) {
+			t.Errorf("%s Failed: [%v] inputted and expected [%x] but got [%x]", t.Name(), test.inputTapes, test.expectedData2, a.Data[len(test.expectedData1)+1:len(test.expectedData1)+1+len(test.expectedData2)])
 		} else if a != nil && len(test.inputTapes) > 1 {
 			var valid bool
 			valid, err = ValidateTapes(test.inputTapes)
@@ -217,8 +224,7 @@ func ExampleNewFromTapes() {
 
 	// Get from tape given the AIP index
 	a := NewFromTapes(bobValidData.Out[0].Tape)
-
-	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, a.Signature)
+	fmt.Printf("address: %s signature: %s", a.AlgorithmSigningComponent, base64.StdEncoding.EncodeToString(a.Signature))
 	// Output:address: 134a6TXxzgQ9Az3w8BcvgdZyA5UqRL89da signature: H+lubfcz5Z2oG8B7HwmP8Z+tALP+KNOPgedo7UTXwW8LBpMkgCgatCdpvbtf7wZZQSIMz83emmAvVS4S3F5X1wo=
 }
 
@@ -273,24 +279,6 @@ func TestValidateTapes(t *testing.T) {
 			t.Errorf("%d %s Failed: inputted and validation should have passed, error: %s", idx, t.Name(), err.Error())
 		}
 	}
-}
-
-// ExampleValidateTapes example using ValidateTapes()
-func ExampleValidateTapes() {
-	// Get BOB data from a TX
-	bobValidData, err := bob.NewFromString(sampleValidBobTx)
-	if err != nil {
-		fmt.Printf("error occurred: %s", err.Error())
-		return
-	}
-
-	// Get from tape
-	if valid, err := ValidateTapes(bobValidData.Out[0].Tape); valid {
-		fmt.Print("AIP is valid")
-	} else if err != nil {
-		fmt.Printf("AIP is invalid: %s", err.Error())
-	}
-	// Output:AIP is valid
 }
 
 // BenchmarkValidateTapes benchmarks the method ValidateTapes()

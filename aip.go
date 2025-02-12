@@ -8,11 +8,8 @@ package aip
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"strings"
 
 	bsm "github.com/bitcoin-sv/go-sdk/compat/bsm"
 	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
@@ -25,7 +22,8 @@ var Prefix = "15PciHG22SNLQJXMoSUaWVi7WSqc7hCfva"
 var hexPrefix = hex.EncodeToString([]byte(Prefix))
 
 const pipe = "|"
-const opReturn = string(rune(script.OpRETURN)) // creates: j
+
+// const opReturn = string(rune(script.OpRETURN)) // creates: j
 
 // Algorithm is an enum for the different possible signature algorithms
 type Algorithm string
@@ -41,73 +39,32 @@ const (
 type Aip struct {
 	Algorithm                 Algorithm `json:"algorithm"`                   // Known AIP algorithm type
 	AlgorithmSigningComponent string    `json:"algorithm_signing_component"` // Changes based on the Algorithm
-	Data                      []string  `json:"data"`                        // Data to be signed or validated
+	Data                      []byte    `json:"data"`                        // Data to be signed or validated
 	Indices                   []int     `json:"indices,omitempty"`           // BOB indices
-	Signature                 string    `json:"signature"`                   // AIP generated signature
+	Signature                 []byte    `json:"signature"`                   // AIP generated signature
 }
 
-// Validate returns true if the given AIP signature is valid for given data
-func (a *Aip) Validate() (bool, error) {
-
-	// Both data and component are required
-	if len(a.Data) == 0 || len(a.AlgorithmSigningComponent) == 0 {
-		return false, errors.New("missing data or signing component")
+// Validate validates the AIP entry
+func (a *Aip) Validate() (valid bool, err error) {
+	if err = bsm.VerifyMessage(a.AlgorithmSigningComponent, a.Signature, a.Data); err != nil {
+		return false, fmt.Errorf("signature verification failed: %v", err)
 	}
-
-	// Check to be sure OP_RETURN was prepended before trying to validate
-	if a.Data[0] != opReturn {
-		return false, fmt.Errorf("the first item in payload is always OP_RETURN, got: %s", a.Data[0])
-	}
-
-	sig, err := base64.StdEncoding.DecodeString(a.Signature)
-	if err != nil {
-		return false, err
-	}
-	// Convert pubkey to address
-	if a.Algorithm == Paymail {
-		// Detect whether this key was compressed when sig was made
-		_, wasCompressed, err := bsm.PubKeyFromSignature(sig, []byte(strings.Join(a.Data, "")))
-		if err != nil {
-			return false, err
-		}
-		var pubKey *ec.PublicKey
-		var addr *script.Address
-		if pubKey, err = ec.PublicKeyFromString(a.AlgorithmSigningComponent); err != nil {
-			return false, err
-		}
-		if addr, err = script.NewAddressFromPublicKeyWithCompression(
-			pubKey,
-			true,
-			wasCompressed); err != nil {
-			return false, err
-		}
-		a.AlgorithmSigningComponent = addr.AddressString
-
-	}
-
-	// You get the address associated with the pki instead of the current address
-	err = bsm.VerifyMessage(a.AlgorithmSigningComponent, sig, []byte(strings.Join(a.Data, "")))
-	return err == nil, err
+	return true, nil
 }
 
 // Sign will provide an AIP signature for a given private key and message using
-// the provided algorithm. It prepends an OP_RETURN to the payload
-func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Aip, err error) {
-
-	// Prepend the OP_RETURN to keep consistent with BitcoinFiles SDK
-	// data = append(data, []byte{byte(txscript.OP_RETURN)})
-	prependedData := []string{opReturn, message}
-
+// the provided algorithm
+func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message []byte) (a *Aip, err error) {
 	// Create the base AIP object
-	a = &Aip{Algorithm: algorithm, Data: prependedData}
+	a = &Aip{Algorithm: algorithm, Data: message}
 
 	// Sign using the private key and the message
 	var sig []byte
-	if sig, err = bsm.SignMessage(privateKey, []byte(strings.Join(prependedData, ""))); err != nil {
+	if sig, err = bsm.SignMessage(privateKey, message); err != nil {
 		return nil, err
 	}
 
-	a.Signature = base64.StdEncoding.EncodeToString(sig)
+	a.Signature = sig
 
 	// Store address vs pubkey
 	switch algorithm {
@@ -121,22 +78,78 @@ func Sign(privateKey *ec.PrivateKey, algorithm Algorithm, message string) (a *Ai
 		}
 	case Paymail:
 		// Signing component = paymail identity key
-		// Get pubKey from private key and overload the address field in AIP
-		// if pubkey, err := bitcoin.PubKeyFromPrivateKeyString(privateKey, false); err != nil {
-		// 	return
-		// }
 		a.AlgorithmSigningComponent = hex.EncodeToString(privateKey.PubKey().Compressed())
 	}
 
 	return
 }
 
+// JS implementation for reference
+
+// /**
+//  * Construct an AIP buffer from the op return data
+//  * @param opReturn
+//  * @returns {Buffer}
+//  */
+//  getAIPMessageBuffer(opReturn: string[]): Buffer {
+// 	const buffers = [];
+// 	if (opReturn[0].replace("0x", "") !== "6a") {
+// 		// include OP_RETURN in constructing the signature buffer
+// 		buffers.push(Buffer.from("6a", "hex"));
+// 	}
+// 	for (const op of opReturn) {
+// 		buffers.push(Buffer.from(op.replace("0x", ""), "hex"));
+// 	}
+// 	// add a trailing "|" - this is the AIP way
+// 	buffers.push(Buffer.from("|"));
+
+// 	return Buffer.concat([...buffers] as unknown as Uint8Array[]);
+// }
+
+// /**
+//  * Sign an op_return hex array with AIP
+//  * @param opReturn {array}
+//  * @param signingPath {string}
+//  * @param outputType {string}
+//  * @return {[]}
+//  */
+//  signOpReturnWithAIP(
+// 	opReturn: string[],
+// 	signingPath = "",
+// 	outputType: BufferEncoding = "hex",
+// ): string[] {
+// 	const aipMessageBuffer = this.getAIPMessageBuffer(opReturn);
+// 	const { address, signature } = this.signMessage(
+// 		aipMessageBuffer,
+// 		signingPath,
+// 	);
+
+// 	return opReturn.concat([
+// 		Buffer.from("|").toString(outputType),
+// 		Buffer.from(AIP_BITCOM_ADDRESS).toString(outputType),
+// 		Buffer.from("BITCOIN_ECDSA").toString(outputType),
+// 		Buffer.from(address).toString(outputType),
+// 		Buffer.from(signature, "base64").toString(outputType),
+// 	]);
+// }
+
 // SignOpReturnData will append the given data and return a bt.Output
 func SignOpReturnData(privateKey *ec.PrivateKey, algorithm Algorithm,
 	data [][]byte) (outData [][]byte, a *Aip, err error) {
 
+	// Ensure first byte is OP_RETURN if not already
+	if len(data) == 0 || len(data[0]) == 0 || data[0][0] != byte(script.OpRETURN) {
+		data = append([][]byte{{byte(script.OpRETURN)}}, data...)
+	}
+
+	// add trailing pipe
+	data = append(data, []byte(pipe))
+
+	// Create message buffer by joining all data
+	messageBuffer := bytes.Join(data, []byte{})
+
 	// Sign with AIP
-	if a, err = Sign(privateKey, algorithm, string(bytes.Join(data, []byte{}))); err != nil {
+	if a, err = Sign(privateKey, algorithm, messageBuffer); err != nil {
 		return
 	}
 
@@ -146,10 +159,8 @@ func SignOpReturnData(privateKey *ec.PrivateKey, algorithm Algorithm,
 		[]byte(Prefix),
 		[]byte(a.Algorithm),
 		[]byte(a.AlgorithmSigningComponent),
-		[]byte(a.Signature),
+		a.Signature,
 	)
 
-	// // Create the output
-	// out, err = bt.NewOpReturnPartsOutput(outData)
 	return
 }

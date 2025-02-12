@@ -12,7 +12,7 @@ func main() {
 	a, err := aip.Sign(
 		priv,
 		aip.BitcoinECDSA,
-		"example message",
+		[]byte("example message"),
 	)
 	if err != nil {
 		log.Fatalf("error occurred: %s", err.Error())
