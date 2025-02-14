@@ -3,6 +3,7 @@ package aip
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -81,7 +82,7 @@ func NewFromTapes(tapes []bpu.Tape) (a *Aip) {
 			if cell.S != nil && *cell.S == Prefix {
 				a = new(Aip)
 				a.FromTape(t)
-				a.SetDataFromTapes(tapes)
+				a.SetDataFromTapes(tapes, 0)
 				return
 			}
 		}
@@ -89,51 +90,173 @@ func NewFromTapes(tapes []bpu.Tape) (a *Aip) {
 	return
 }
 
+// // SetDataFromTapes sets the data the AIP signature is signing
+// func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
+
+// 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
+// 	var data = []string{opReturn}
+
+// 	if len(a.Indices) == 0 {
+
+// 		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
+// 		for _, tape := range tapes {
+// 			for _, cell := range tape.Cell {
+// 				if cell.S != nil && *cell.S == Prefix {
+// 					data = append(data, pipe)
+// 					a.Data = data
+// 					return
+// 				}
+// 				// Skip the OPS
+// 				// if cell.Ops != nil {
+// 				if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
+// 					continue
+// 				}
+// 				if cell.S != nil {
+// 					data = append(data, strings.TrimSpace(*cell.S))
+// 				}
+
+// 			}
+// 		}
+
+// 	} else {
+
+// 		var indexCt = 0
+
+// 		for _, tape := range tapes {
+// 			for _, cell := range tape.Cell {
+// 				if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
+// 					data = append(data, *cell.S)
+// 				} else {
+// 					data = append(data, pipe)
+// 				}
+// 				indexCt++
+// 			}
+// 		}
+
+// 		a.Data = data
+// 	}
+// }
+
 // SetDataFromTapes sets the data the AIP signature is signing
-func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
-
+func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
+	// var data [][]byte
 	var data = []string{opReturn}
+	var foundAIP bool
+	var aipTapeIndex int
+	var aipCellIndex int
 
-	if len(a.Indices) == 0 {
-
-		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
-		for _, tape := range tapes {
-			for _, cell := range tape.Cell {
-				if cell.S != nil && *cell.S == Prefix {
-					data = append(data, pipe)
-					a.Data = data
-					return
+	// First find the AIP tape and cell index
+	aipCount := 0
+	for i, tape := range tapes {
+		for j, cell := range tape.Cell {
+			if cell.S != nil && *cell.S == Prefix {
+				if aipCount == instance {
+					aipTapeIndex = i
+					aipCellIndex = j
+					foundAIP = true
+					break
 				}
-				// Skip the OPS
-				// if cell.Ops != nil {
-				if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
-					continue
-				}
-				if cell.S != nil {
-					data = append(data, strings.TrimSpace(*cell.S))
-				}
-
+				aipCount++
 			}
+
 		}
-
-	} else {
-
-		var indexCt = 0
-
-		for _, tape := range tapes {
-			for _, cell := range tape.Cell {
-				if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
-					data = append(data, *cell.S)
-				} else {
-					data = append(data, pipe)
-				}
-				indexCt++
-			}
+		if foundAIP {
+			break
 		}
-
-		a.Data = data
 	}
+
+	// If we found AIP, collect data from all tapes up to the AIP tape
+	if foundAIP {
+		if len(a.Indices) == 0 {
+
+			// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
+			for i, tape := range tapes {
+				for j, cell := range tape.Cell {
+					if i == aipTapeIndex && j >= aipCellIndex {
+						break
+					}
+					if cell.S != nil && *cell.S == Prefix {
+						data = append(data, pipe)
+						a.Data = data
+						return
+					}
+					// Skip the OPS
+					// if cell.Ops != nil {
+					if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
+						continue
+					}
+					if cell.S != nil {
+						data = append(data, strings.TrimSpace(*cell.S))
+					}
+
+				}
+			}
+
+		} else {
+
+			var indexCt = 0
+
+			for _, tape := range tapes {
+				for _, cell := range tape.Cell {
+					if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
+						data = append(data, *cell.S)
+					} else {
+						data = append(data, pipe)
+					}
+					indexCt++
+				}
+			}
+
+			a.Data = data
+		}
+
+		// // Always start with OP_RETURN
+		// data = append(data, []byte{byte(script.OpRETURN)})
+
+		// // Collect all data up to the AIP entry
+		// for i := 0; i < len(tapes); i++ {
+		// 	for j := 0; j < len(tapes[i].Cell); j++ {
+		// 		cell := tapes[i].Cell[j]
+		// 		// If we're on the AIP tape and at/past the AIP cell, stop
+		// 		if i == aipTapeIndex && j >= aipCellIndex {
+		// 			break
+		// 		}
+
+		// 		// Skip OP_RETURN since we already added it
+		// 		if cell.Op != nil && *cell.Op == script.OpRETURN {
+		// 			continue
+		// 		}
+
+		// 		// Add the cell data if it exists
+		// 		if cell.B != nil {
+		// 			bytesFromBase64, err := base64.StdEncoding.DecodeString(*cell.B)
+		// 			if err != nil {
+		// 				return
+		// 			}
+		// 			data = append(data, bytesFromBase64)
+		// 		}
+		// 		// else if cell.H != nil {
+		// 		// 	bytesFromHex, err := hex.DecodeString(*cell.H)
+		// 		// 	if err != nil {
+		// 		// 		return
+		// 		// 	}
+		// 		// 	data = append(data, bytesFromHex)
+		// 		// } else if cell.S != nil {
+		// 		// 	data = append(data, []byte(*cell.S))
+		// 		// }
+		// 	}
+
+		// }
+		// // add the protocol separator
+		// data = append(data, []byte(pipe))
+	}
+
+	// Join all data with no separator to match signing format
+	// a.Data = bytes.Join(data, []byte{})
+
+	// log the data
+	fmt.Printf("Data: %x\n", a.Data)
 }
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
@@ -200,7 +323,7 @@ func ValidateTapes(tapes []bpu.Tape) (bool, error) {
 			// Once we hit AIP Prefix, stop
 			if cell.S != nil && *cell.S == Prefix {
 				a := NewFromTape(tape)
-				a.SetDataFromTapes(tapes)
+				a.SetDataFromTapes(tapes, 0)
 				return a.Validate()
 			}
 		}
@@ -224,13 +347,15 @@ func NewFromAllTapes(tapes []bpu.Tape) []*Aip {
 	var aips []*Aip
 
 	// Find all tapes that contain the AIP prefix
+	instance := 0
 	for i, t := range tapes {
 		for _, cell := range t.Cell {
 			if cell.S != nil && *cell.S == Prefix {
 				a := new(Aip)
 				a.FromTape(t)
 				// For all AIP entries, include all data from the start up to this entry
-				a.SetDataFromTapes(tapes[:i+1])
+				a.SetDataFromTapes(tapes[:i+1], instance)
+				instance++
 				aips = append(aips, a)
 				continue
 			}
