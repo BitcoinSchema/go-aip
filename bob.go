@@ -3,7 +3,6 @@ package aip
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -90,53 +89,6 @@ func NewFromTapes(tapes []bpu.Tape) (a *Aip) {
 	return
 }
 
-// // SetDataFromTapes sets the data the AIP signature is signing
-// func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
-
-// 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
-// 	var data = []string{opReturn}
-
-// 	if len(a.Indices) == 0 {
-
-// 		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
-// 		for _, tape := range tapes {
-// 			for _, cell := range tape.Cell {
-// 				if cell.S != nil && *cell.S == Prefix {
-// 					data = append(data, pipe)
-// 					a.Data = data
-// 					return
-// 				}
-// 				// Skip the OPS
-// 				// if cell.Ops != nil {
-// 				if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
-// 					continue
-// 				}
-// 				if cell.S != nil {
-// 					data = append(data, strings.TrimSpace(*cell.S))
-// 				}
-
-// 			}
-// 		}
-
-// 	} else {
-
-// 		var indexCt = 0
-
-// 		for _, tape := range tapes {
-// 			for _, cell := range tape.Cell {
-// 				if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
-// 					data = append(data, *cell.S)
-// 				} else {
-// 					data = append(data, pipe)
-// 				}
-// 				indexCt++
-// 			}
-// 		}
-
-// 		a.Data = data
-// 	}
-// }
-
 // SetDataFromTapes sets the data the AIP signature is signing
 func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
@@ -178,7 +130,6 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 						data = append(data, pipe)
 						a.Data = data
 						if i == aipTapeIndex && j >= aipCellIndex {
-							fmt.Printf("Data: %x\n", a.Data)
 							return
 						}
 					}
@@ -211,7 +162,6 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 			}
 		}
 		a.Data = data
-		fmt.Printf("Data: %x\n", a.Data)
 	}
 
 }
