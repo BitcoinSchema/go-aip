@@ -443,10 +443,10 @@ func TestMultipleAIPs(t *testing.T) {
 		t.Log(a.AlgorithmSigningComponent)
 		t.Log(a.Signature)
 		t.Log(len(strings.Join(a.Data, "")))
-		// t.Log(len(a.Data))
+		t.Log(a.Data)
 
 		t.Log(a.Validate())
 	}
-	t.FailNow()
+	// t.FailNow()
 
 }

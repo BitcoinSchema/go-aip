@@ -173,14 +173,16 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 			// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
 			for i, tape := range tapes {
 				for j, cell := range tape.Cell {
-					if i == aipTapeIndex && j >= aipCellIndex {
-						break
-					}
+
 					if cell.S != nil && *cell.S == Prefix {
 						data = append(data, pipe)
 						a.Data = data
-						return
+						if i == aipTapeIndex && j >= aipCellIndex {
+							fmt.Printf("Data: %x\n", a.Data)
+							return
+						}
 					}
+
 					// Skip the OPS
 					// if cell.Ops != nil {
 					if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
@@ -207,56 +209,11 @@ func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 					indexCt++
 				}
 			}
-
-			a.Data = data
 		}
-
-		// // Always start with OP_RETURN
-		// data = append(data, []byte{byte(script.OpRETURN)})
-
-		// // Collect all data up to the AIP entry
-		// for i := 0; i < len(tapes); i++ {
-		// 	for j := 0; j < len(tapes[i].Cell); j++ {
-		// 		cell := tapes[i].Cell[j]
-		// 		// If we're on the AIP tape and at/past the AIP cell, stop
-		// 		if i == aipTapeIndex && j >= aipCellIndex {
-		// 			break
-		// 		}
-
-		// 		// Skip OP_RETURN since we already added it
-		// 		if cell.Op != nil && *cell.Op == script.OpRETURN {
-		// 			continue
-		// 		}
-
-		// 		// Add the cell data if it exists
-		// 		if cell.B != nil {
-		// 			bytesFromBase64, err := base64.StdEncoding.DecodeString(*cell.B)
-		// 			if err != nil {
-		// 				return
-		// 			}
-		// 			data = append(data, bytesFromBase64)
-		// 		}
-		// 		// else if cell.H != nil {
-		// 		// 	bytesFromHex, err := hex.DecodeString(*cell.H)
-		// 		// 	if err != nil {
-		// 		// 		return
-		// 		// 	}
-		// 		// 	data = append(data, bytesFromHex)
-		// 		// } else if cell.S != nil {
-		// 		// 	data = append(data, []byte(*cell.S))
-		// 		// }
-		// 	}
-
-		// }
-		// // add the protocol separator
-		// data = append(data, []byte(pipe))
+		a.Data = data
+		fmt.Printf("Data: %x\n", a.Data)
 	}
 
-	// Join all data with no separator to match signing format
-	// a.Data = bytes.Join(data, []byte{})
-
-	// log the data
-	fmt.Printf("Data: %x\n", a.Data)
 }
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
