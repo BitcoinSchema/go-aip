@@ -447,6 +447,4 @@ func TestMultipleAIPs(t *testing.T) {
 
 		t.Log(a.Validate())
 	}
-	// t.FailNow()
-
 }
