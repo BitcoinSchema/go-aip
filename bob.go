@@ -81,7 +81,7 @@ func NewFromTapes(tapes []bpu.Tape) (a *Aip) {
 			if cell.S != nil && *cell.S == Prefix {
 				a = new(Aip)
 				a.FromTape(t)
-				a.SetDataFromTapes(tapes)
+				a.SetDataFromTapes(tapes, 0)
 				return
 			}
 		}
@@ -90,50 +90,80 @@ func NewFromTapes(tapes []bpu.Tape) (a *Aip) {
 }
 
 // SetDataFromTapes sets the data the AIP signature is signing
-func (a *Aip) SetDataFromTapes(tapes []bpu.Tape) {
-
+func (a *Aip) SetDataFromTapes(tapes []bpu.Tape, instance int) {
 	// Set OP_RETURN to be consistent with BitcoinFiles SDK
+	// var data [][]byte
 	var data = []string{opReturn}
+	var foundAIP bool
+	var aipTapeIndex int
+	var aipCellIndex int
 
-	if len(a.Indices) == 0 {
+	// First find the AIP tape and cell index
+	aipCount := 0
+	for i, tape := range tapes {
+		for j, cell := range tape.Cell {
+			if cell.S != nil && *cell.S == Prefix {
+				if aipCount == instance {
+					aipTapeIndex = i
+					aipCellIndex = j
+					foundAIP = true
+					break
+				}
+				aipCount++
+			}
 
-		// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
-		for _, tape := range tapes {
-			for _, cell := range tape.Cell {
-				if cell.S != nil && *cell.S == Prefix {
-					data = append(data, pipe)
-					a.Data = data
-					return
-				}
-				// Skip the OPS
-				// if cell.Ops != nil {
-				if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
-					continue
-				}
-				if cell.S != nil {
-					data = append(data, strings.TrimSpace(*cell.S))
-				}
+		}
+		if foundAIP {
+			break
+		}
+	}
 
+	// If we found AIP, collect data from all tapes up to the AIP tape
+	if foundAIP {
+		if len(a.Indices) == 0 {
+
+			// Walk over all output values and concatenate them until we hit the AIP prefix, then add in the separator
+			for i, tape := range tapes {
+				for j, cell := range tape.Cell {
+
+					if cell.S != nil && *cell.S == Prefix {
+						data = append(data, pipe)
+						a.Data = data
+						if i == aipTapeIndex && j >= aipCellIndex {
+							return
+						}
+					}
+
+					// Skip the OPS
+					// if cell.Ops != nil {
+					if cell.Op != nil && (*cell.Op == 0 || *cell.Op > 0x4e) {
+						continue
+					}
+					if cell.S != nil {
+						data = append(data, strings.TrimSpace(*cell.S))
+					}
+
+				}
+			}
+
+		} else {
+
+			var indexCt = 0
+
+			for _, tape := range tapes {
+				for _, cell := range tape.Cell {
+					if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
+						data = append(data, *cell.S)
+					} else {
+						data = append(data, pipe)
+					}
+					indexCt++
+				}
 			}
 		}
-
-	} else {
-
-		var indexCt = 0
-
-		for _, tape := range tapes {
-			for _, cell := range tape.Cell {
-				if cell.S != nil && *cell.S != Prefix && contains(a.Indices, indexCt) {
-					data = append(data, *cell.S)
-				} else {
-					data = append(data, pipe)
-				}
-				indexCt++
-			}
-		}
-
 		a.Data = data
 	}
+
 }
 
 // SignBobOpReturnData appends a signature to a BOB Tx by adding a
@@ -200,7 +230,7 @@ func ValidateTapes(tapes []bpu.Tape) (bool, error) {
 			// Once we hit AIP Prefix, stop
 			if cell.S != nil && *cell.S == Prefix {
 				a := NewFromTape(tape)
-				a.SetDataFromTapes(tapes)
+				a.SetDataFromTapes(tapes, 0)
 				return a.Validate()
 			}
 		}
@@ -217,4 +247,26 @@ func contains(s []int, e int) bool {
 		}
 	}
 	return false
+}
+
+// NewFromAllTapes will create all AIP objects from a []bob.Tape
+func NewFromAllTapes(tapes []bpu.Tape) []*Aip {
+	var aips []*Aip
+
+	// Find all tapes that contain the AIP prefix
+	instance := 0
+	for i, t := range tapes {
+		for _, cell := range t.Cell {
+			if cell.S != nil && *cell.S == Prefix {
+				a := new(Aip)
+				a.FromTape(t)
+				// For all AIP entries, include all data from the start up to this entry
+				a.SetDataFromTapes(tapes[:i+1], instance)
+				instance++
+				aips = append(aips, a)
+				continue
+			}
+		}
+	}
+	return aips
 }
