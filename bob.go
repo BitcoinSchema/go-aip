@@ -218,3 +218,23 @@ func contains(s []int, e int) bool {
 	}
 	return false
 }
+
+// NewFromAllTapes will create all AIP objects from a []bob.Tape
+func NewFromAllTapes(tapes []bpu.Tape) []*Aip {
+	var aips []*Aip
+
+	// Find all tapes that contain the AIP prefix
+	for i, t := range tapes {
+		for _, cell := range t.Cell {
+			if cell.S != nil && *cell.S == Prefix {
+				a := new(Aip)
+				a.FromTape(t)
+				// For all AIP entries, include all data from the start up to this entry
+				a.SetDataFromTapes(tapes[:i+1])
+				aips = append(aips, a)
+				continue
+			}
+		}
+	}
+	return aips
+}
