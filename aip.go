@@ -14,9 +14,9 @@ import (
 	"fmt"
 	"strings"
 
-	bsm "github.com/bitcoin-sv/go-sdk/compat/bsm"
-	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
-	"github.com/bitcoin-sv/go-sdk/script"
+	bsm "github.com/bsv-blockchain/go-sdk/compat/bsm"
+	ec "github.com/bsv-blockchain/go-sdk/primitives/ec"
+	"github.com/bsv-blockchain/go-sdk/script"
 )
 
 // Prefix is the Bitcom prefix used by AIP

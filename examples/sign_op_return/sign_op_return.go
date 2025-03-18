@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
 	"github.com/bitcoinschema/go-aip"
+	ec "github.com/bsv-blockchain/go-sdk/primitives/ec"
 )
 
 func main() {

@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	ec "github.com/bitcoin-sv/go-sdk/primitives/ec"
 	"github.com/bitcoinschema/go-bpu"
+	ec "github.com/bsv-blockchain/go-sdk/primitives/ec"
 )
 
 // NewFromTape will create a new AIP object from a bob.Tape
