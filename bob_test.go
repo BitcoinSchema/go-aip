@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/bitcoin-sv/go-sdk/script"
-	"github.com/bitcoin-sv/go-sdk/transaction"
 	"github.com/bitcoinschema/go-bob"
 	"github.com/bitcoinschema/go-bpu"
+	"github.com/bsv-blockchain/go-sdk/script"
+	"github.com/bsv-blockchain/go-sdk/transaction"
 )
 
 // TestNewFromTape will test the method NewFromTape()
@@ -308,8 +308,8 @@ func getBobOutput() bpu.Output {
 	// privateKey, _ := bitcoin.PrivateKeyFromString(examplePrivateKey)
 	tx := transaction.NewTransaction()
 	scr := &script.Script{}
-	scr.AppendOpcodes(script.OpFALSE, script.OpRETURN)
-	scr.AppendPushDataArray([][]byte{[]byte("prefix1"), []byte("example data"), {0x13, 0x37}})
+	_ = scr.AppendOpcodes(script.OpFALSE, script.OpRETURN)
+	_ = scr.AppendPushDataArray([][]byte{[]byte("prefix1"), []byte("example data"), {0x13, 0x37}})
 	tx.AddOutput(&transaction.TransactionOutput{
 		Satoshis:      0,
 		LockingScript: scr,
